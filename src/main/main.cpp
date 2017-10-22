@@ -422,12 +422,13 @@ int main(int argc, char **argv)
 {
 	struct options opts;
 	opts.radius  = 50;
-	opts.level   = 2;
+	opts.level   = 3;
 	opts.scale0  = sqrt(2);
-	opts.mode    = 0;       //-> -1 for 'renmin', [0] for 'set', and 1 for 'adapt'
+	opts.mode    = 0;       //-> -1 for 'fix', [0] for 'set', and 1 for 'adapt'
 	opts.dp_mode = 0;       //-> [0] for 'normal', 1 for 'restrict'
 	opts.verbose = 0;       //-> [0] no verbose,   1 for verbose
 	opts.test    = 0;       //-> [0] for not use test mode; 1 for equal_ave, 2 for peak_ave
+	opts.check   = 0;       //-> [0] for NO check signal length; 1 for SWAP shorter signal to first
 
 	//----- parse arguments -----//
 	if(GetOpts(argc, argv, &opts) < 0){
@@ -497,14 +498,18 @@ int main(int argc, char **argv)
 
 
 //----- length check ------//
-if(reference.size()>peer.size())
+if(opts.check==1)
 {
-	fprintf(stderr,"reference.size() %d is larger than peer.size() %d ! do swap \n",
-		reference.size(),peer.size());
-	std::vector<double> tmp=peer;
-	peer=reference;
-	reference=tmp;
+	if(reference.size()>peer.size())
+	{
+		fprintf(stderr,"reference.size() %d is larger than peer.size() %d ! do swap \n",
+			reference.size(),peer.size());
+		std::vector<double> tmp=peer;
+		peer=reference;
+		reference=tmp;
+	}
 }
+
 //std::vector<int> refer_orig(reference.begin(), reference.end());
 //std::vector<int> peer_orig(peer.begin(), peer.end());
 
