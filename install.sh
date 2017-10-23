@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ -f "wletdtw" ] || [ -f "mer2seq" ]
+if [ -f "cwDTW" ] && [ -f "seq2sig" ]
 then
-	echo " executable files 'wletdtw' and 'mer2seq' already been compiled. "
+	echo " executable files 'cwDTW' and 'seq2sig' already been compiled. "
 	exit 1
 fi
 
@@ -11,8 +11,8 @@ mkdir -p Release
 cd Release
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
-mv bin/wletdtw ../
-mv bin/mer2seq ../
+mv bin/wletdtw ../cwDTW
+mv bin/mer2seq ../seq2sig
 cd ../
 rm -rf Release
 
