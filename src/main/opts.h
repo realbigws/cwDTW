@@ -45,7 +45,7 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
     };
 
     if((argc !=5 && argc != 7 && argc != 9 && argc != 11 && argc != 13 && argc != 15 && argc != 17 && argc != 19 && argc!= 21 && argc!= 23) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1) {
-	EX_TRACE("----------- WaveletDTW ---------- \n");
+	EX_TRACE("----------- cwDTW ---------- \n");
 	EX_TRACE("version v0.01 (OCT 22 2017) \n");
 	EX_TRACE("-------------------------------------------------------------\n");
 	EX_TRACE("required:\n");
@@ -72,7 +72,7 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
             return -1;
 
         case 'h':
-            EX_TRACE("----------- WaveletDTW ---------- \n"
+            EX_TRACE("----------- cwDTW ---------- \n"
                      "version v0.01 (OCT 22 2017) \n"
                      "-------------------------------------------------------------\n"
                      "required:\n"
