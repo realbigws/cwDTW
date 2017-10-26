@@ -26,7 +26,7 @@ void AliPair_To_Ali1_Ali2(int n1,int n2,
 	vector <int> &ali1,vector <int> &ali2);
 
 void From_Align_Get_Bound(int moln1,int moln2,vector<pair<int,int> > &align,
-	vector<pair<int,int> > &bound,int neib1,int neib2);
+	vector<pair<int,int> > &bound,int neib);
 
 void Renmin_To_Sheng_align(int moln1,int moln2,
 	vector<pair<int,int> > &align_in, vector<pair<int,int> > &align_out);

@@ -104,7 +104,7 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 
 //----------------- boundary generation for constrained dynamic time warping (cDTW) -------------//
 void BoundGeneration(std::vector<std::pair<int,int> >& cosali, 
-	int neib1, int neib2, std::vector<std::pair<int,int> >& bound, int mode)
+	int neib, std::vector<std::pair<int,int> >& bound, int mode)
 {
 
 	bool firstorder = true;
@@ -115,6 +115,7 @@ void BoundGeneration(std::vector<std::pair<int,int> >& cosali,
 		for(int i = cosali.size(); i--;)
 			std::swap(cosali[i].first, cosali[i].second);
 	}
+
 
 //if(mode!=-1) //-> mode = -1 means Renmin mode
 vector<pair<int,int> > cosali_=cosali;
@@ -168,7 +169,7 @@ if(mode==1) //-> use partial-diagonol alignment
 	Renmin_To_Sheng_align(moln1,moln2,cosali_,align_sheng);
 	//-> get bound in sheng style
 	std::vector<std::pair<int,int> > bound_sheng;
-	From_Align_Get_Bound(moln1,moln2,align_sheng,bound_sheng,neib1,neib2);
+	From_Align_Get_Bound(moln1,moln2,align_sheng,bound_sheng,neib);
 	//-> transfer bound to renmin style
 	Sheng_To_Renmin_bound(moln1,moln2,bound_sheng,bound);
 	//----- maybe useful -----//
@@ -180,7 +181,6 @@ if(mode==1) //-> use partial-diagonol alignment
 
 	//----> output post-bound alignnment -------
 //	{
-//		printf("radius=%d %d\n",neib1,neib2);
 //		for(int i = 0; i < bound.size(); i++)
 //		{
 //			printf("%d -> %d  %d \n",i,bound[i].first,bound[i].second);
@@ -368,7 +368,7 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 			}
 			//----- cDWT (constrained DWT) -------//
 			vector<pair<int,int> > bound;
-			BoundGeneration(alignment, radius, radius, bound, mode);
+			BoundGeneration(alignment, radius, bound, mode);
 			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
 		}
 		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
@@ -545,7 +545,7 @@ if(test==1)  //-> equal_ave
 			}
 			//----- cDWT (constrained DWT) -------//
 			std::vector<std::pair<int,int> > bound;
-			BoundGeneration(alignment, radius, radius, bound, mode);
+			BoundGeneration(alignment, radius, bound, mode);
 			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
 		}
 		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
@@ -680,7 +680,7 @@ int main(int argc, char **argv)
 		int max_level=100000; //here we fix maximal level 
 		FastDTW(reference, peer, cosali, opts.radius, max_level,opts.mode, &tdiff);
 		vector<pair<int,int> > bound;
-		BoundGeneration(cosali, opts.radius, opts.radius, bound, opts.mode);
+		BoundGeneration(cosali, opts.radius, bound, opts.mode);
 		//------ 5.2 generate final alignment via cDTW ------//
 		std::vector<std::pair<int,int> > alignment;
 		tdiff = g::proc::BoundDynamicTimeWarping(reference, peer, bound, alignment);
@@ -734,7 +734,7 @@ int main(int argc, char **argv)
 
 	//------ 5.1 generate final boundary -------//
 	std::vector<std::pair<int,int> > bound;
-	BoundGeneration(cosali, opts.radius, opts.radius, bound, opts.mode);
+	BoundGeneration(cosali, opts.radius, bound, opts.mode);
 
 	//------ 5.2 generate final alignment via cDTW ------//
 	std::vector<std::pair<int,int> > alignment;

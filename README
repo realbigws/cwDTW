@@ -35,28 +35,21 @@ Contact email:
 
 #---- usage ---#
 ----------- cwDTW ----------
-version v0.02 (OCT 22 2017)
+version v0.03 (OCT 22 2017)
 -------------------------------------------------------------
 required:
 [-i SHORT SIGNAL][-p LONG SIGNAL][-o OUTPUT]
 optional:
-([-r NEIGHBOUR RADIUS])([-l LEVEL])([-s SCALE])
-([-m mode])([-M dp_mode])([-v verbose])([-t test])([-c len_check])
+([-r RADIUS])([-l LEVEL])([-s SCALE])
 -------------------------------------------------------------
 **** required: ******
 SHORT SIGNALE: (reference) sequence signal from ATCG...;
 LONG SIGNAL:   (nanopore) raw electrical current signal;
 OUTPUT:   signal alignment result; if not specified, then no output be generated;
 **** key parameters: ******
-NEIGHBOUR RADIUS: warp search radius (default 50);
+RADIUS:   warp search radius (default 50);
 LEVEL:    sampling level in continous wavelet (default 3);
 SCALE:    base scale in continous wavelet (default sqrt(2));
-**** vice parameters: ******
-mode:     cDTW radius mode. 0 for 'set' and 1 for 'adapt' (default 0)
-dp_mode:  final cDTW mode. 0 for 'normal' and 1 for 'restrict' (default 0)
-verbose:  0 for NO screenout message, 1 for screenout (default 0);
-test:     test mode. 0 not_use; 1 equal_ave; 2 peak_ave; 3 FastDTW (default 0)
-check:    0 for NO check length; 1 for swap shorter signal to first (default 0)
 
 
 

@@ -109,7 +109,7 @@ void g::proc::AliPair_To_Ali1_Ali2(int n1,int n2,
 
 //---- part 1. generate bound from a given alignment ------//
 void g::proc::From_Align_Get_Bound(int moln1,int moln2,vector<pair<int,int> > &align,
-	vector<pair<int,int> > &bound,int neib1,int neib2)
+	vector<pair<int,int> > &bound,int neib)
 {
 	int k;
 	int ii,jj;
@@ -175,10 +175,10 @@ void g::proc::From_Align_Get_Bound(int moln1,int moln2,vector<pair<int,int> > &a
 	{
 		ii=bound[k].first;
 		jj=bound[k].second;
-		if(ii-neib2<0)ii=0;
-		else ii=ii-neib2;
-		if(jj+neib2>moln2)jj=moln2;
-		else jj=jj+neib2;
+		if(ii-neib<0)ii=0;
+		else ii=ii-neib;
+		if(jj+neib>moln2)jj=moln2;
+		else jj=jj+neib;
 		bound[k].first=ii;
 		bound[k].second=jj;
 	}
@@ -203,13 +203,13 @@ void g::proc::From_Align_Get_Bound(int moln1,int moln2,vector<pair<int,int> > &a
 				wscurr_start=jj;
 				first=0;
 				//record
-				for(i=wsprev-neib1;i<=wscurr+neib1;i++)
+				for(i=wsprev-neib;i<=wscurr+neib;i++)
 				{
 					if(i<1)continue;
 					if(i>moln1)break;
-					ww1=wsprev_start-neib2;
+					ww1=wsprev_start;
 					if(ww1<1)ww1=1;
-					ww2=wscurr_start+neib2;
+					ww2=wscurr_start;
 					if(ww2>moln2)ww2=moln2;
 					if(ww1<bound[i].first)bound[i].first=ww1;
 					if(ww2>bound[i].second)bound[i].second=ww2;
@@ -230,13 +230,13 @@ void g::proc::From_Align_Get_Bound(int moln1,int moln2,vector<pair<int,int> > &a
 	if(wsprev==moln1+1)
 	{
 		wscurr_start=moln2;
-		for(i=wsprev-neib1-1;i<=moln1;i++)
+		for(i=wsprev-neib-1;i<=moln1;i++)
 		{
 			if(i<1)continue;
 			if(i>moln1)break;
-			ww1=wsprev_start-neib2;
+			ww1=wsprev_start;
 			if(ww1<1)ww1=1;
-			ww2=wscurr_start+neib2;
+			ww2=wscurr_start;
 			if(ww2>moln2)ww2=moln2;
 			if(ww1<bound[i].first)bound[i].first=ww1;
 			if(ww2>bound[i].second)bound[i].second=ww2;
