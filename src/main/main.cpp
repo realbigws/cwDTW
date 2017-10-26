@@ -104,29 +104,68 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 
 //----------------- boundary generation for constrained dynamic time warping (cDTW) -------------//
 void BoundGeneration(std::vector<std::pair<int,int> >& cosali, 
-		int neib1, int neib2, std::vector<std::pair<int,int> >& bound, int mode)
+	int neib1, int neib2, std::vector<std::pair<int,int> >& bound, int mode)
 {
+
 	bool firstorder = true;
-	
-	if(cosali[cosali.size()-1].first > cosali[cosali.size()-1].second){
-		firstorder = false;
-	}
-	
-	if(!firstorder){		//genome first
-		for(int i = cosali.size(); i--;){
+//	if(cosali[cosali.size()-1].first > cosali[cosali.size()-1].second)
+//		firstorder = false;
+
+	if(!firstorder){                //genome first
+		for(int i = cosali.size(); i--;)
 			std::swap(cosali[i].first, cosali[i].second);
-		}
 	}
 
-if(mode!=-1) //-> mode = -1 means Renmin mode
+//if(mode!=-1) //-> mode = -1 means Renmin mode
+vector<pair<int,int> > cosali_=cosali;
+if(mode==1) //-> use partial-diagonol alignment
 {
-	//---------- ws take-over ------------//start
+
+	//-------- generate partial-diagonol alignment -------//
+	vector<pair<int,int> > cosali2;
+        cosali2.push_back(cosali[0]);
+        for(int i = 1; i < cosali.size(); i++){
+                if(cosali[i].first != cosali2[cosali2.size()-1].first){
+                        cosali2.push_back(cosali[i]);
+                }
+                else{
+                        cosali2[cosali2.size()-1].second = cosali[i].second;
+                }
+        }
+
+	cosali_.clear();
+	for(int i = 1; i < cosali2.size(); i++)
+	{
+		int pre_idx = cosali2[i-1].first, cur_idx = cosali2[i].first;
+		int pre_anchor = cosali2[i-1].second, cur_anchor = cosali2[i].second;
+		double anchor_diff = (cur_anchor-pre_anchor)/(cur_idx-pre_idx);
+		for(int k = pre_idx, count = 0; k < cur_idx; k++, count++)
+		{
+			int mid = pre_anchor+(int)(count*anchor_diff);  //assign point relationship
+			if(mid<pre_anchor)mid=pre_anchor;
+			if(mid>cur_anchor)mid=cur_anchor;
+			cosali_.push_back(make_pair(k,mid));
+		}
+	}
+	cosali_.push_back(cosali2[cosali2.size()-1]);
+}
+
+	//----> output pre-bound alignnment -------
+//	{
+//		for(int i = 0; i < cosali_.size(); i++)
+//		{
+//			printf("%d -> %d  %d \n",i,cosali_[i].first,cosali_[i].second);
+//		}
+//	}
+
+
+	//---------- use block bound ------------//start
 	//-> get signal length
-	int moln1=cosali[cosali.size()-1].first+1;
-	int moln2=cosali[cosali.size()-1].second+1;
+	int moln1=cosali_[cosali_.size()-1].first+1;
+	int moln2=cosali_[cosali_.size()-1].second+1;
 	//-> renmin align to sheng style
 	std::vector<std::pair<int,int> > align_sheng;
-	Renmin_To_Sheng_align(moln1,moln2,cosali,align_sheng);
+	Renmin_To_Sheng_align(moln1,moln2,cosali_,align_sheng);
 	//-> get bound in sheng style
 	std::vector<std::pair<int,int> > bound_sheng;
 	From_Align_Get_Bound(moln1,moln2,align_sheng,bound_sheng,neib1,neib2);
@@ -136,10 +175,23 @@ if(mode!=-1) //-> mode = -1 means Renmin mode
 	bound[0].first = 0;
 	bound[bound.size()-1].first = bound[bound.size()-2].first;
 	bound[bound.size()-1].second = cosali[cosali.size()-1].second;
-	return;
-	//---------- ws take-over ------------//over
-}
 
+
+
+	//----> output post-bound alignnment -------
+//	{
+//		printf("radius=%d %d\n",neib1,neib2);
+//		for(int i = 0; i < bound.size(); i++)
+//		{
+//			printf("%d -> %d  %d \n",i,bound[i].first,bound[i].second);
+//		}
+//		exit(-1);
+//	}
+
+	return;
+	//---------- use block bound ------------//over
+
+/*
 	int radius=neib1;
 	std::vector<std::pair<int,int> > cosali2;
 	
@@ -182,13 +234,161 @@ if(mode!=-1) //-> mode = -1 means Renmin mode
 	bound[0].first = 0;
 	bound[bound.size()-1].first = bound[bound.size()-2].first;
 	bound[bound.size()-1].second = cosali[cosali.size()-1].second;
-
+*/
 }
+
+//====================== FastDTW ===================//
+void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
+	std::vector<std::pair<int,int> >& alignment, int radius, int max_level, int mode,
+	double* totaldiff = 0)
+{
+	double tdiff;
+	vector <vector<pair<int, double> > > sig1peaks, sig2peaks;
+	int length1 = in1.size(), length2 = in2.size();
+	
+	//---- determine level -------//
+	int l1=1;
+	for(;;)
+	{
+		int num1=pow(2,l1);
+		if(length1/num1<radius+2)break;
+		l1++;
+	}
+	int l2=1;
+	for(;;)
+	{
+		int num2=pow(2,l2);
+		if(length2/num2<radius+2)break;
+		l2++;
+	}
+	int level=l1<l2?l1:l2;
+	if(level>max_level)level=max_level;
+
+	//---- create sigpeak ------//
+	int cur_level=1;
+	for(int k=level;k>=0;k--)
+	{
+		vector<pair<int, double> > sig1peaks_cur;
+		vector<pair<int, double> > sig2peaks_cur;
+
+		//------ using Equally Averaging ------//(just for comparison)
+		//--> proc peak1
+		int cur1=0;
+		int num1=pow(2,cur_level);
+		for(int i = 0; i < length1/num1 -1; i++)
+		{
+			double val=0;
+			for(int j=0;j<num1;j++)
+			{
+				val+=in1[cur1];
+				cur1++;
+			}
+			val/=num1;
+			sig1peaks_cur.push_back(make_pair(i*num1,val));
+		}
+		{
+			int i=length1/num1-1;
+			int cc=0;
+			double val=0;
+			for(int j=cur1;j<in1.size();j++)
+			{
+				val+=in1[j];
+				cc++;
+			}
+			val/=cc;
+			sig1peaks_cur.push_back(make_pair(in1.size()-1,val));
+		}
+		//--> proc peak2
+		int cur2=0;
+		int num2=pow(2,cur_level);
+		for(int i = 0; i < length2/num2 -1; i++)
+		{
+			double val=0;
+			for(int j=0;j<num2;j++)
+			{
+				val+=in2[cur2];
+				cur2++;
+			}
+			val/=num2;
+			sig2peaks_cur.push_back(make_pair(i*num2,val));
+		}
+		{
+			int i=length2/num2-1;
+			int cc=0;
+			double val=0;
+			for(int j=cur2;j<in2.size();j++)
+			{
+				val+=in2[j];
+				cc++;
+			}
+			val/=cc;
+			sig2peaks_cur.push_back(make_pair(in2.size()-1,val));
+		}
+
+		//----- push_back -----//
+		sig1peaks.push_back(sig1peaks_cur);
+		sig2peaks.push_back(sig2peaks_cur);
+		cur_level++;
+	}
+
+	//----------- perform pyamid DTW ----------------//
+	for(int k=0;k<level;k++)
+	{
+		//--- extract peak ----//
+		vector<double> peak1(sig1peaks[k].size());
+		vector<double> peak2(sig2peaks[k].size());
+		for(int i = sig1peaks[k].size(); i--;){
+			peak1[i] = sig1peaks[k][i].second;
+		}
+		for(int i = sig2peaks[k].size(); i--;){
+			peak2[i] = sig2peaks[k][i].second;
+		}
+		
+		//--- perform align ----//
+		//----- apply DTW or cDTW dependent on k-th level -------//
+		if(k == 0){
+			tdiff = g::proc::DynamicTimeWarping(peak1, peak2, alignment);
+		}
+		else{
+			//----- ReMapIndex_partI (map ground level upon k-th level) -----//
+			int c = 0;
+			for(int i = 0; i < alignment.size(); i++){
+				while(sig1peaks[k][c].first < alignment[i].first){
+					c++;
+				}
+				alignment[i].first = c;	
+			}
+			
+			int d = 0;
+			for(int i = 0; i < alignment.size(); i++){
+				while(sig2peaks[k][d].first < alignment[i].second){
+					d++;
+				}
+				alignment[i].second = d;	
+			}
+			//----- cDWT (constrained DWT) -------//
+			vector<pair<int,int> > bound;
+			BoundGeneration(alignment, radius, radius, bound, mode);
+			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
+		}
+		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
+		for(int i = alignment.size(); i--;){
+			alignment[i].first = sig1peaks[k][alignment[i].first].first;
+			alignment[i].second = sig2peaks[k][alignment[i].second].first;
+		}
+	}
+
+	//----- return diff ------//
+	if(totaldiff){
+		*totaldiff = tdiff;
+	}
+}
+
 
 //====================== continous wavelet dynamic time warping (cwDTW) ========================//
 void MultiLevel_WaveletDTW(std::vector<double>& in1, std::vector<double>& in2,
 	std::vector<std::vector<double> >& sig1, std::vector<std::vector<double> >& sig2, 
-	std::vector<std::pair<int,int> >& alignment, int radius, int mode, int test, 
+	std::vector<std::pair<int,int> >& alignment, int radius, int test, int mode, 
 	double* totaldiff = 0)
 {
 	double tdiff;
@@ -345,25 +545,7 @@ if(test==1)  //-> equal_ave
 			}
 			//----- cDWT (constrained DWT) -------//
 			std::vector<std::pair<int,int> > bound;
-
-
-
-int neib;
-if(mode==-1) //fix mode
-{
-	neib=180;
-}
-else if(mode==0) //set mode
-{
-	neib=radius;
-}
-else             //adaptive mode
-{
-	neib=radius*pow(2,tot_size-k);
-}
-//printf("radius=%d,neib=%d\n",radius,neib);
-
-			BoundGeneration(alignment, neib, neib, bound,mode);
+			BoundGeneration(alignment, radius, radius, bound, mode);
 			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
 		}
 		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
@@ -382,9 +564,7 @@ else             //adaptive mode
 //----------- write alignment to file -------------//__2017.10.15__//(Sheng modified)
 void WriteSequenceAlignment(const char* output, 
 	const std::vector<double>& reference, const std::vector<double>& peer,
-//	const std::vector<int>& refer_orig, const std::vector<double>& reference,
-//      const std::vector<int>& peer_orig, const std::vector<double>& peer, 
-	vector<pair<int,int> >& alignment)
+	vector<pair<int,int> >& alignment, int swap)
 {
 	vector <std::string> tmp_rec;
 	double diff;	
@@ -392,21 +572,19 @@ void WriteSequenceAlignment(const char* output,
 	{
 		int pos1=alignment[i].second;
 		int pos2=alignment[i].first;
-/*
-//		std::string fivemer;
-//		for(int j = 0; j < 5 && j+alignment[i].first < genomes.size(); j++)
-//			fivemer.push_back(genomes.at(alignment[i].first+j));
-//		int fivemer_index=g::Mer2Signal::FiveMer2Index(fivemer);
-//		std::string fivemer="";
-//		int fivemer_index=refer_orig.at(alignment[i].first);
-*/
 		//----- output to string ----//
 		std::ostringstream o;
-//		o<<setw(5)<<peer_orig[alignment[i].second]<<" "<<setw(5)<<fivemer_index<<" | ";
-		o<<setw(10)<<alignment[i].second<<" "<<setw(9)<<alignment[i].first<<" | ";
-		o<<setw(15)<<peer[alignment[i].second]<<", "<<setw(15)<<reference[alignment[i].first];
+		if(swap==1)
+		{
+			o<<setw(10)<<alignment[i].second<<" "<<setw(9)<<alignment[i].first<<" | ";
+			o<<setw(15)<<peer[alignment[i].second]<<", "<<setw(15)<<reference[alignment[i].first];
+		}
+		else
+		{
+			o<<setw(10)<<alignment[i].first<<" "<<setw(9)<<alignment[i].second<<" | ";
+			o<<setw(15)<<peer[alignment[i].first]<<", "<<setw(15)<<reference[alignment[i].second];
+		}
 		o<<"          diff:"<<setw(15)<<(diff = std::fabs(reference[alignment[i].first]-peer[alignment[i].second]));
-//		o<<" |          "<<fivemer;
 		//----- record string -----//
 		std::string s=o.str();
 		tmp_rec.push_back(s);
@@ -424,11 +602,10 @@ int main(int argc, char **argv)
 	opts.radius  = 50;
 	opts.level   = 3;
 	opts.scale0  = sqrt(2);
-	opts.mode    = 0;       //-> -1 for 'fix', [0] for 'set', and 1 for 'adapt'
-	opts.dp_mode = 0;       //-> [0] for 'normal', 1 for 'restrict'
-	opts.verbose = 0;       //-> [0] no verbose,   1 for verbose
-	opts.test    = 0;       //-> [0] for not use test mode; 1 for equal_ave, 2 for peak_ave
-	opts.check   = 0;       //-> [0] for NO check signal length; 1 for SWAP shorter signal to first
+	opts.verbose = 0;       //-> [0] no verbose; 1 verbose
+	opts.test    = 0;       //-> [0] not use test mode; 1 equal_ave, 2 peak_ave, 3 Fast_DTW
+	opts.mode    = 0;       //-> [0] block bound; 1 diagonol bound
+	
 
 	//----- parse arguments -----//
 	if(GetOpts(argc, argv, &opts) < 0){
@@ -449,23 +626,7 @@ int main(int argc, char **argv)
 	//======================= START Procedure ===================================//
 
 	//=========================================//
-	//----- 1. read ATCG genome sequence -----//
-/*
-	std::vector<char> genomes;   //genome sequence
-	if(!g::io::ReadATCG(opts.input, genomes)){
-		EX_TRACE("Cannot open %s.\n", opts.input);
-		return -1;
-	}
-	//---- get genome sequence name ----//start
-	std::string genom_name_orig=opts.input;
-	std::string genom_name;
-	getBaseName(genom_name_orig,genom_name,'/','.');
-	//---- get genome sequence name ----//end
-
-	//----- 1.1 pore_model: transform genome sequence to expected signal -------//
-	std::vector<double> reference;  //reference: genome signal
-	Genomes2SignalSequence(genomes, reference, 1);
-*/
+	//----- 1. read genome translated signal -----//
 	std::vector<double> reference;
 	if(!g::io::ReadSignalSequence(opts.input,reference)){
 		EX_TRACE("Cannot open %s.\n", opts.input);
@@ -475,16 +636,8 @@ int main(int argc, char **argv)
 	std::string genom_name;
 	getBaseName(genom_name_orig,genom_name,'/','.');
 
-/*
 	//========================================//
 	//----- 2. read nanopore raw signal -----//
-	std::vector<int> peer_orig;             //peer: nanopore signal
-	if(!g::io::ReadSignalSequence_int(opts.peer, peer_orig)){
-		EX_TRACE("Cannot open %s.\n", opts.peer);
-		return -1;
-	}
-	std::vector<double> peer(peer_orig.begin(), peer_orig.end());
-*/
 	std::vector<double> peer;
 	if(!g::io::ReadSignalSequence(opts.peer,peer)){
 		EX_TRACE("Cannot open %s.\n", opts.peer);
@@ -497,22 +650,15 @@ int main(int argc, char **argv)
 	//---- get nanopore raw signal name ----//end
 
 
-//----- length check ------//
-if(opts.check==1)
-{
+	//----- length check ------//
+	int swap=0;
 	if(reference.size()>peer.size())
 	{
-		fprintf(stderr,"reference.size() %d is larger than peer.size() %d ! do swap \n",
-			reference.size(),peer.size());
 		std::vector<double> tmp=peer;
 		peer=reference;
 		reference=tmp;
+		swap=1;
 	}
-}
-
-//std::vector<int> refer_orig(reference.begin(), reference.end());
-//std::vector<int> peer_orig(peer.begin(), peer.end());
-
 
 	//==================================================//
 	//------3. process initial input signals ----------//
@@ -523,6 +669,31 @@ if(opts.check==1)
 
 	//----- 3.2 calculate length ratio between input signals -----//	
 	double alpha = (double)peer.size()/reference.size();
+
+
+	//--------------- Just For Test (Fast_DTW) -------------------//
+	if(opts.test==3)
+	{
+		//------ 5.1 generate initial alignment via FastDTW ------//
+		vector<pair<int,int> > cosali;
+		double tdiff;
+		int max_level=100000; //here we fix maximal level 
+		FastDTW(reference, peer, cosali, opts.radius, max_level,opts.mode, &tdiff);
+		vector<pair<int,int> > bound;
+		BoundGeneration(cosali, opts.radius, opts.radius, bound, opts.mode);
+		//------ 5.2 generate final alignment via cDTW ------//
+		std::vector<std::pair<int,int> > alignment;
+		tdiff = g::proc::BoundDynamicTimeWarping(reference, peer, bound, alignment);
+		fprintf(stderr,"%s %s %lf %d %lf\n",signal_name.c_str(),genom_name.c_str(),tdiff,alignment.size(),tdiff/alignment.size());
+
+		//=================================================//
+		//------ 6. output final alignment to file -------//
+		if(output!="")
+			WriteSequenceAlignment(opts.output, reference, peer, alignment, swap);
+			
+		//----- exit -----//	
+		return 0;
+	}
 
 
 	//====================================================//
@@ -536,9 +707,9 @@ if(opts.check==1)
 	int npyr = opts.level;          // default: 3
 	double scale0 = opts.scale0;	// default: sqrt(2)
 	double dscale = 1;              // default: 1
-	
+
+	CWTAnalysis(reference, rcwt, scale0, dscale, npyr);	
 	CWTAnalysis(peer, pcwt, scale0*alpha, dscale, npyr);
-	CWTAnalysis(reference, rcwt, scale0, dscale, npyr);
 
 	//------ 4.1 Zscore normaliza on both CWT signals -----//	
 	//if multiscale is used, pyr logical should be added.
@@ -547,35 +718,6 @@ if(opts.check==1)
 		g::proc::ZScoreNormalize(pcwt[i]);
 	}
 
-/*
-//--- peakpick out -----//
-{
-	//peakpick
-	std::vector<std::pair<int, double> > sig1peaks, sig2peaks;
-	g::proc::PeakPick(rcwt[0], sig1peaks);
-	g::proc::PeakPick(pcwt[0], sig2peaks);
-	std::vector<double> peak1(sig1peaks.size());
-	std::vector<double> peak2(sig2peaks.size());
-	for(int i = sig1peaks.size(); i--;)
-		peak1[i] = sig1peaks[i].second;
-	for(int i = sig2peaks.size(); i--;)
-		peak2[i] = sig2peaks[i].second;
-
-	//output
-	FILE *fp;
-	string ws1=signal_name+".rawsig";
-	fp=fopen(ws1.c_str(),"wb");
-	for(int i=0;i<(int)peak1.size();i++)fprintf(fp,"%f\n",peak1[i]);
-	fclose(fp);
-	string ws2=genom_name+".seqsig";
-	fp=fopen(ws2.c_str(),"wb");
-	for(int i=0;i<(int)peak2.size();i++)fprintf(fp,"%f\n",peak2[i]);
-	fclose(fp);
-
-	//exit
-	exit(-1);
-}
-*/
 
 	//============================================//
 	//------ 5. multi-level WaveletDTW ----------//
@@ -585,49 +727,25 @@ if(opts.check==1)
 	if(opts.verbose ==1){
 		EX_TRACE("Coarse Alignment...\n");
 	}
-	MultiLevel_WaveletDTW(reference, peer, rcwt, pcwt, cosali, opts.radius, opts.mode, opts.test, &tdiff);
+	MultiLevel_WaveletDTW(reference, peer, rcwt, pcwt, cosali, opts.radius, opts.test, opts.mode, &tdiff);
 	if(opts.verbose ==1){
 		EX_TRACE("Average Deviation (%.1lf/%ld=%.3lf)\n", tdiff, cosali.size(), tdiff/cosali.size());
 	}
 
 	//------ 5.1 generate final boundary -------//
 	std::vector<std::pair<int,int> > bound;
-
-
-int radius1;
-int radius2;
-if(opts.mode==-1) //-> fix mode (renmin mode)
-{
-	radius1=opts.radius*alpha;
-	radius2=opts.radius*alpha;
-}
-else if(opts.mode==0) //-> set mode
-{
-	radius1=opts.radius;
-	radius2=opts.radius;
-}
-else                 //-> adaptive mode
-{
-	radius1=opts.radius;
-	radius2=opts.radius*alpha;
-}
-
-	BoundGeneration(cosali, radius1, radius2, bound, opts.mode);
+	BoundGeneration(cosali, opts.radius, opts.radius, bound, opts.mode);
 
 	//------ 5.2 generate final alignment via cDTW ------//
 	std::vector<std::pair<int,int> > alignment;
-	if(opts.dp_mode==1)
-		tdiff = g::proc::BoundDynamicTimeWarpingR(reference, peer, bound, alignment);
-	else
-		tdiff = g::proc::BoundDynamicTimeWarping(reference, peer, bound, alignment);
+	tdiff = g::proc::BoundDynamicTimeWarping(reference, peer, bound, alignment);
 	fprintf(stderr,"%s %s %lf %d %lf\n",signal_name.c_str(),genom_name.c_str(),tdiff,alignment.size(),tdiff/alignment.size());
 
 
 	//=================================================//
 	//------ 6. output final alignment to file -------//
 	if(output!="")
-		WriteSequenceAlignment(opts.output, reference, peer, alignment);
-
+		WriteSequenceAlignment(opts.output, reference, peer, alignment, swap);
 
 	//----- exit -----//	
 	return 0;

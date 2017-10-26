@@ -645,15 +645,15 @@ static inline double& SCORE(int i, int j, std::vector<double>* score, const std:
 }
 
 double g::proc::BoundDynamicTimeWarping(const std::vector<double>& sequence1, const std::vector<double>& sequence2, 
-										const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment)
+	const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment)
 {
 	/*check order*/
 	bool firstorder = true;
 	const std::vector<double>* seq1, * seq2;
 	
-	if(sequence1.size() > sequence2.size()){
-		firstorder = false;
-	}
+//	if(sequence1.size() > sequence2.size()){
+//		firstorder = false;
+//	}
 	
 	if(!firstorder){		//genome first
 		seq1 = &sequence2;
