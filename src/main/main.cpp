@@ -396,7 +396,7 @@ void MultiLevel_WaveletDTW(std::vector<double>& in1, std::vector<double>& in2,
 	double length1 = sig1[0].size(), length2 = sig2[0].size();
 
 	int tot_size=sig1.size();
-	for(int k = 0; k < sig1.size(); k++)
+	for(int k = 0; k < tot_size; k++)
 	{
 		//------ peakpick CWT signal -------------//
 		g::proc::PeakPick(sig1[k], sig1peaks);
@@ -545,7 +545,8 @@ if(test==1)  //-> equal_ave
 			}
 			//----- cDWT (constrained DWT) -------//
 			std::vector<std::pair<int,int> > bound;
-			BoundGeneration(alignment, radius, bound, mode);
+			int neib=radius*pow(2,tot_size-k); //adaptive radius
+			BoundGeneration(alignment, neib, bound, mode);
 			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
 		}
 		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
