@@ -78,7 +78,8 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 int main(int argc, char **argv)
 {
 	struct options opts;
-	opts.scale0  = sqrt(2);
+	opts.scale0 = sqrt(2);
+	opts.ZorNOT = 0;    //0 for NOT perform Z-normalize
 
 	//----- parse arguments -----//
 	if(GetOpts(argc, argv, &opts) < 0){
@@ -111,7 +112,9 @@ int main(int argc, char **argv)
 
 	//==================================================//
 	//----- 2. process initial input signals ----------//
-	g::proc::ZScoreNormalize(reference);
+	if(opts.ZorNOT==1){
+		g::proc::ZScoreNormalize(reference);
+	}
 
 	//====================================================//
 	//----- 3. continous wavelet transform --------------//
@@ -123,7 +126,9 @@ int main(int argc, char **argv)
 
 	//----- 4. Zscore normaliza on both CWT signals -----//	
 	//if multiscale is used, pyr logical should be added.
-	g::proc::ZScoreNormalize(rcwt[0]);
+	if(opts.ZorNOT==1){
+		g::proc::ZScoreNormalize(rcwt[0]);
+	}
 	std::vector<std::pair<int, double> > sigpeaks;
 	g::proc::PeakPick(rcwt[0], sigpeaks);
 

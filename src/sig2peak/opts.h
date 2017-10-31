@@ -13,6 +13,7 @@ struct options {
     char input[65532];
     char output[65532];
     double scale0;
+    int ZorNOT;
 };
 
 inline int GetOpts(int argc, char **argv, options* opts_){
@@ -22,16 +23,18 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         { "input",           required_argument,      NULL,              'i' },
         { "output",          required_argument,      NULL,              'o' },
         { "scale",           required_argument,      NULL,              's' },
+        { "ZorNOT",          no_argument,            NULL,              'z' },
         { NULL,              0,                      NULL,               0  }
     };
 	
     if((argc != 7) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
-		EX_TRACE("[-i SIGNAL INPUT][-o CWT OUTPUT][-s SCALE]\n");
+		EX_TRACE("[-i SIGNAL INPUT][-o CWT OUTPUT][-s SCALE]([-z ZNORM_or_NOT])\n");
+		EX_TRACE("[note]: if -z is set to 0, then NO Znormalize will be performd \n");
 		return -1;
     }
     
     int ch;
-    while((ch = getopt_long(argc, argv, "hi:o:s:", longopts, NULL))!= -1){
+    while((ch = getopt_long(argc, argv, "hi:o:s:z:", longopts, NULL))!= -1){
         switch (ch) {
 
         case '?':
@@ -78,6 +81,18 @@ inline int GetOpts(int argc, char **argv, options* opts_){
             }
         }
         break;
+
+        case 'z':
+        {
+            std::istringstream iss(optarg);
+            iss >> opts_->ZorNOT;
+            if (iss.fail()){
+                EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
+        }
+        break;
+
 
         case 0: 
             break;
