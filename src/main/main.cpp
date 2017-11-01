@@ -611,7 +611,7 @@ int main(int argc, char **argv)
 	//----- parse arguments -----//
 	if(GetOpts(argc, argv, &opts) < 0){
 		EX_TRACE("**WRONG INPUT!**\n");
-		return 0;
+		return -1;
 	}
 
 	std::string input1=opts.input;
@@ -620,7 +620,7 @@ int main(int argc, char **argv)
 	if(input1=="" || input2=="")
 	{
 		fprintf(stderr,"input1 or input2 is NULL \n");
-		exit(-1);
+		return -1;
 	}
 
 

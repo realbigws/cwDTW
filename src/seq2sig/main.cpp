@@ -35,8 +35,10 @@ int main(int argc, char **argv)
 	std::string output="";
 
 	struct options opts;
+	opts.scale=1;
 	if(GetOpts(argc, argv, &opts) < 0){
-		return 0;
+		EX_TRACE("**WRONG INPUT!**\n");
+		return -1;
 	}
 
 	input=opts.input;
@@ -45,7 +47,7 @@ int main(int argc, char **argv)
 	if(input=="" || output=="")
 	{
 		fprintf(stderr,"input or output is NULL \n");
-		exit(-1);
+		return -1;
 	}
 
 	std::vector<char> genomes;

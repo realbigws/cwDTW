@@ -38,16 +38,23 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         switch (ch) {
 
         case '?':
+        {
             EX_TRACE("Invalid option '%s'.", argv[optind-1]);
             return -1;
+        }
 
         case ':':
+        {
             EX_TRACE("Missing option argument for '%s'.", argv[optind-1]);
             return -1;
+        }
 
         case 'h':
-            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]\n");
-			return 0;
+        {
+            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-z ZNORM_or_NOT=0])\n");
+            EX_TRACE("[note]: if -z is set to 0, then NO Znormalize will be performd \n");
+            return -1;
+        }
 
         case 'i':
         {

@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 	//----- parse arguments -----//
 	if(GetOpts(argc, argv, &opts) < 0){
 		EX_TRACE("**WRONG INPUT!**\n");
-		return 0;
+		return -1;
 	}
 
 	std::string input="";
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 	if(input=="" || output=="")
 	{
 		fprintf(stderr,"input or output is NULL \n");
-		exit(-1);
+		return -1;
 	}
 
 	//======================= START Procedure ===================================//

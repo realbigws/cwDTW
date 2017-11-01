@@ -61,14 +61,19 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
         switch(ch) {
 
         case '?':
+        {
             EX_TRACE("Invalid option '%s'.", argv[optind-1]);
             return -1;
+        }
 
         case ':':
+        {
             EX_TRACE("Missing option argument for '%s'.", argv[optind-1]);
             return -1;
+        }
 
         case 'h':
+        {
             EX_TRACE("----------- cwDTW ---------- \n"
                      "version v0.03 (OCT 22 2017) \n"
                      "-------------------------------------------------------------\n"
@@ -91,13 +96,16 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
 //                     "test:     test mode. 0 not_use; 1 equal_ave; 2 peak_ave; 3 FastDTW (default 0) \n"
 //                     "mode:     bound mode. 0 block_mode; 1 diagonol_mode (default 0) \n"
             return -1;
+        }
 
         case 'i':
         {
             std::istringstream iss(optarg);
             iss >> opts_->input;
-            if(iss.fail())
+            if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
         }
         break;
 
@@ -105,8 +113,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
         {
             std::istringstream iss(optarg);
             iss >> opts_->peer;
-            if(iss.fail())
+            if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
         }
         break;
 
@@ -114,8 +124,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
         {
             std::istringstream iss(optarg);
             iss >> opts_->output;
-            if(iss.fail())
+            if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
         }
         break;
 		
@@ -123,8 +135,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
         {
             std::istringstream iss(optarg);
             iss >> opts_->radius;
-            if(iss.fail())
+            if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
         }
         break;
 		
@@ -132,8 +146,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
         {
             std::istringstream iss(optarg);
             iss >> opts_->level;
-            if(iss.fail())
+            if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
         }
         break;
 		
@@ -141,8 +157,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
         {
             std::istringstream iss(optarg);
             iss >> opts_->scale0;
-            if(iss.fail())
+            if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
         }
         break;
 
@@ -150,8 +168,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
 	{
              std::istringstream iss(optarg);
              iss >> opts_->verbose;
-             if(iss.fail())
+             if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+             }
 	}
 	break;
 
@@ -159,8 +179,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
 	{
              std::istringstream iss(optarg);
              iss >> opts_->test;
-             if(iss.fail())
+             if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+             }
 	}
 	break;
 
@@ -168,8 +190,10 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
 	{
              std::istringstream iss(optarg);
              iss >> opts_->mode;
-             if(iss.fail())
+             if(iss.fail()){
                 EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+             }
 	}
 
         case 0:

@@ -35,16 +35,22 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         switch (ch) {
 
         case '?':
+        {
             EX_TRACE("Invalid option '%s'.", argv[optind-1]);
             return -1;
+        }
 
         case ':':
+        {
             EX_TRACE("Missing option argument for '%s'.", argv[optind-1]);
             return -1;
+        }
 
         case 'h':
+        {
             EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])\n");
-			return 0;
+            return -1;
+        }
 
         case 'i':
         {
