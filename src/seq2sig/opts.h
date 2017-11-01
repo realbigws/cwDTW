@@ -74,7 +74,7 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         }
         break;
 
-        case 'c':
+        case 's':
         {
             std::istringstream iss(optarg);
             iss >> opts_->scale;
