@@ -82,7 +82,7 @@ bool g::io::ReadSignalSequence_int(const char* name, std::vector<int>& signals)
     return true;
 }
 
-bool g::io::WriteSignalSequence(const char* name, const std::vector<double>& signals)
+bool g::io::WriteSignalSequence(const char* name, const std::vector<int>& signals)
 {
 	std::ofstream out(name);
     if(!out.good()) {

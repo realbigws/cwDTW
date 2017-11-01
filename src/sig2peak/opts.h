@@ -27,8 +27,8 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         { NULL,              0,                      NULL,               0  }
     };
 	
-    if((argc != 7) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
-		EX_TRACE("[-i SIGNAL INPUT][-o CWT OUTPUT][-s SCALE]([-z ZNORM_or_NOT])\n");
+    if((argc != 7 && argc != 9 ) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
+		EX_TRACE("[-i SIGNAL INPUT][-o CWT OUTPUT][-s SCALE]([-z ZNORM_or_NOT=0])\n");
 		EX_TRACE("[note]: if -z is set to 0, then NO Znormalize will be performd \n");
 		return -1;
     }

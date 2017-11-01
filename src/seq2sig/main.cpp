@@ -10,23 +10,23 @@
 #include "util/exception.h"
 #include "5mer/5mer_index.h"
 
-bool Genomes2SignalSequence(const std::vector<char>& genomes, std::vector<double>& signals, int scale)
+bool Genomes2SignalSequence(const std::vector<char>& genomes, std::vector<int>& signals, int scale)
 {
 	size_t bound = genomes.size()-5;//genomes.size()%5;
 	for(size_t i = 0; i < bound; i++){
 		int idx = g::Mer2Signal::FiveMer2Index(genomes[i], genomes[i+1], genomes[i+2], genomes[i+3], genomes[i+4]);
-		double sigval = g::Mer2Signal::AvgSignalAt(idx);
+		double sigval = 3.8*g::Mer2Signal::AvgSignalAt(idx);
 		
 		for(int c = scale; c--;){
-			signals.push_back(sigval);
+			signals.push_back((int)sigval);
 		}
 	}
-	
-	for(size_t i = bound; i < genomes.size(); i++){
-		for(int c = scale; c--;){
-			signals.push_back(100);
-		}
-	}
+
+//	for(size_t i = bound; i < genomes.size(); i++){
+//		for(int c = scale; c--;){
+//			signals.push_back(100);
+//		}
+//	}
 }
 
 int main(int argc, char **argv)
@@ -41,27 +41,19 @@ int main(int argc, char **argv)
 
 	input=opts.input;
 	output=opts.output;
+	int scale=opts.scale;
 	if(input=="" || output=="")
 	{
 		fprintf(stderr,"input or output is NULL \n");
 		exit(-1);
 	}
 
-	
-	EX_TRACE("Transform genomes to signal sequence...\n");
-	
 	std::vector<char> genomes;
-	std::vector<double> signals;
-	
+	std::vector<int> signals;
 	g::io::ReadATCG(opts.input, genomes);
-	EX_TRACE("%ld genomes are readed.\n", genomes.size());
-	
-	Genomes2SignalSequence(genomes, signals, 1);
-	
+	Genomes2SignalSequence(genomes, signals, scale);
 	g::io::WriteSignalSequence(opts.output, signals);
-	
-// 	genome::Mer2Signal::FiveMer2Index("ATAAA");
-	
+
 	return 0;
 }
 

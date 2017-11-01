@@ -58,12 +58,13 @@ SCALE:    base scale in continous wavelet (default sqrt(2));
 #=========
 
 #-> 1. generate genome signal from DNA sequence via pore model.
-./seq2sig -i example/002a08b9-0248-4929-9759-2d5c0942076d.fasta -o 002a08b9-0248-4929-9759-2d5c0942076d.seqsig
+./seq2sig -i example/002a08b9-0248-4929-9759-2d5c0942076d.fasta -o 002a08b9-0248-4929-9759-2d5c0942076d.seqsig -s 1
 
-#-> 2. generate coarsening signal via peak-pick on CWT spectrum
-./sig2peak -i example/002a08b9-0248-4929-9759-2d5c0942076d.seqsig -o 002a08b9-0248-4929-9759-2d5c0942076d.peak_seqsig -a 2.828
+#-> 2. generate coarsening signal via peak-pick on CWT spectrum.
+./sig2peak -i example/002a08b9-0248-4929-9759-2d5c0942076d.seqsig -o 002a08b9-0248-4929-9759-2d5c0942076d.peak_seqsig -s 2.828 -z 1
+./sig2peak -i example/002a08b9-0248-4929-9759-2d5c0942076d.rawsig -o 002a08b9-0248-4929-9759-2d5c0942076d.peak_rawsig -s 22.715 -z 1  #-> 22.715=2.828*126965/15807:wq
 
-#-> 3. perform alignment between nanopore signal and genome signal
+#-> 3. perform alignment between nanopore signal and genome signal.
 ./cwDTW -i example/002a08b9-0248-4929-9759-2d5c0942076d.seqsig -p example/002a08b9-0248-4929-9759-2d5c0942076d.rawsig -o align_out
 
 

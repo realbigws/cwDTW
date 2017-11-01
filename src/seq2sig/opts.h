@@ -12,6 +12,7 @@ extern "C" {
 struct options {
     char input[65532];
     char output[65532];
+    int scale=1;
 };
 
 inline int GetOpts(int argc, char **argv, options* opts_){
@@ -20,16 +21,17 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         { "help",            no_argument,            NULL,              'h' },
         { "output",          required_argument,      NULL,              'o' },
         { "input",    	     required_argument,      NULL,              'i' },
+	{ "scale",           required_argument,      NULL,              's' },
         { NULL,              0,                      NULL,               0  }
     };
 	
-    if((argc != 5) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
-		EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]\n");
+    if((argc != 5 && argc != 7) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
+		EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])\n");
 		return -1;
     }
     
     int ch;
-    while((ch = getopt_long(argc, argv, "hi:o:", longopts, NULL))!= -1){
+    while((ch = getopt_long(argc, argv, "hi:o:s:", longopts, NULL))!= -1){
         switch (ch) {
 
         case '?':
@@ -41,7 +43,7 @@ inline int GetOpts(int argc, char **argv, options* opts_){
             return -1;
 
         case 'h':
-            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]\n");
+            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])\n");
 			return 0;
 
         case 'i':
@@ -65,7 +67,19 @@ inline int GetOpts(int argc, char **argv, options* opts_){
             }
         }
         break;
-		
+
+        case 'c':
+        {
+            std::istringstream iss(optarg);
+            iss >> opts_->scale;
+            if (iss.fail()){
+                EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
+        }
+        break;
+
+
         case 0: 
             break;
 

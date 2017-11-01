@@ -12,7 +12,7 @@ cd Release
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 mv bin/wletdtw ../cwDTW
-mv bin/mer2seq ../seq2sig
+mv bin/seq2sig ../seq2sig
 mv bin/sig2peak ../sig2peak
 cd ../
 rm -rf Release
