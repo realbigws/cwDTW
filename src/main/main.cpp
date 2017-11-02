@@ -571,18 +571,16 @@ void WriteSequenceAlignment(const char* output,
 	double diff;	
 	for(int i = 0; i < alignment.size(); i++)
 	{
-		int pos1=alignment[i].second;
-		int pos2=alignment[i].first;
 		//----- output to string ----//
 		std::ostringstream o;
 		if(swap==1)
 		{
-			o<<setw(10)<<alignment[i].second<<" "<<setw(9)<<alignment[i].first<<" | ";
+			o<<setw(10)<<alignment[i].second+1<<" "<<setw(9)<<alignment[i].first+1<<" | ";
 			o<<setw(15)<<peer[alignment[i].second]<<", "<<setw(15)<<reference[alignment[i].first];
 		}
 		else
 		{
-			o<<setw(10)<<alignment[i].first<<" "<<setw(9)<<alignment[i].second<<" | ";
+			o<<setw(10)<<alignment[i].first+1<<" "<<setw(9)<<alignment[i].second+1<<" | ";
 			o<<setw(15)<<peer[alignment[i].first]<<", "<<setw(15)<<reference[alignment[i].second];
 		}
 		o<<"          diff:"<<setw(15)<<(diff = std::fabs(reference[alignment[i].first]-peer[alignment[i].second]));
