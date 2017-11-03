@@ -573,17 +573,16 @@ void WriteSequenceAlignment(const char* output,
 	{
 		//----- output to string ----//
 		std::ostringstream o;
+		diff = std::fabs(reference[alignment[i].first]-peer[alignment[i].second]);
 		if(swap==1)
 		{
 			o<<setw(10)<<alignment[i].second+1<<" "<<setw(9)<<alignment[i].first+1<<" | ";
 			o<<setw(15)<<peer[alignment[i].second]<<", "<<setw(15)<<reference[alignment[i].first];
-			diff = std::fabs(reference[alignment[i].first]-peer[alignment[i].second]);
 		}
 		else
 		{
 			o<<setw(10)<<alignment[i].first+1<<" "<<setw(9)<<alignment[i].second+1<<" | ";
-			o<<setw(15)<<peer[alignment[i].first]<<", "<<setw(15)<<reference[alignment[i].second];
-			diff = std::fabs(reference[alignment[i].second]-peer[alignment[i].first]);
+			o<<setw(15)<<reference[alignment[i].first]<<", "<<setw(15)<<peer[alignment[i].second];
 		}
 		o<<"          diff:"<<setw(15)<<diff;
 		//----- record string -----//
