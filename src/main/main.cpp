@@ -564,6 +564,7 @@ if(test==1)  //-> equal_ave
 
 //----------- write alignment to file -------------//__2017.10.15__//(Sheng modified)
 void WriteSequenceAlignment(const char* output, 
+	const std::vector<double>& reference_orig, const std::vector<double>& peer_orig,
 	const std::vector<double>& reference, const std::vector<double>& peer,
 	vector<pair<int,int> >& alignment, int swap)
 {
@@ -576,13 +577,15 @@ void WriteSequenceAlignment(const char* output,
 		diff = std::fabs(reference[alignment[i].first]-peer[alignment[i].second]);
 		if(swap==1)
 		{
-			o<<setw(10)<<alignment[i].second+1<<" "<<setw(9)<<alignment[i].first+1<<" | ";
-			o<<setw(15)<<peer[alignment[i].second]<<", "<<setw(15)<<reference[alignment[i].first];
+			o<<setw(10)<<alignment[i].second+1<<" "<<setw(10)<<alignment[i].first+1<<" | ";
+			o<<setw(15)<<reference_orig[alignment[i].second]<<" "<<setw(15)<<peer_orig[alignment[i].first]<<" | ";
+			o<<setw(15)<<peer[alignment[i].second]<<" "<<setw(15)<<reference[alignment[i].first];
 		}
 		else
 		{
-			o<<setw(10)<<alignment[i].first+1<<" "<<setw(9)<<alignment[i].second+1<<" | ";
-			o<<setw(15)<<reference[alignment[i].first]<<", "<<setw(15)<<peer[alignment[i].second];
+			o<<setw(10)<<alignment[i].first+1<<" "<<setw(10)<<alignment[i].second+1<<" | ";
+			o<<setw(15)<<reference_orig[alignment[i].first]<<" "<<setw(15)<<peer_orig[alignment[i].second]<<" | ";
+			o<<setw(15)<<reference[alignment[i].first]<<" "<<setw(15)<<peer[alignment[i].second];
 		}
 		o<<"          diff:"<<setw(15)<<diff;
 		//----- record string -----//
@@ -632,6 +635,7 @@ int main(int argc, char **argv)
 		EX_TRACE("Cannot open %s.\n", opts.input);
 		return -1;
 	}
+	std::vector<double> reference_orig=reference;
 	std::string genom_name_orig=opts.input;
 	std::string genom_name;
 	getBaseName(genom_name_orig,genom_name,'/','.');
@@ -643,11 +647,10 @@ int main(int argc, char **argv)
 		EX_TRACE("Cannot open %s.\n", opts.peer);
 		return -1;
 	}
-	//---- get nanopore raw signal name ----//start
+	std::vector<double> peer_orig=peer;
 	std::string signal_name_orig=opts.peer;
 	std::string signal_name;
 	getBaseName(signal_name_orig,signal_name,'/','.');
-	//---- get nanopore raw signal name ----//end
 
 
 	//----- length check ------//
@@ -689,7 +692,7 @@ int main(int argc, char **argv)
 		//=================================================//
 		//------ 6. output final alignment to file -------//
 		if(output!="")
-			WriteSequenceAlignment(opts.output, reference, peer, alignment, swap);
+			WriteSequenceAlignment(opts.output, reference_orig, peer_orig, reference, peer, alignment, swap);
 			
 		//----- exit -----//	
 		return 0;
@@ -745,7 +748,7 @@ int main(int argc, char **argv)
 	//=================================================//
 	//------ 6. output final alignment to file -------//
 	if(output!="")
-		WriteSequenceAlignment(opts.output, reference, peer, alignment, swap);
+		WriteSequenceAlignment(opts.output, reference_orig, peer_orig, reference, peer, alignment, swap);
 
 	//----- exit -----//	
 	return 0;

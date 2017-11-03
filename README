@@ -3,7 +3,7 @@
 #==========
 
 Title:
-  Continuous Wavelet Dynamic Time Warping for unbalanced global mapping of two signals
+  cwDTW: Continuous Wavelet Dynamic Time Warping for unbalanced global mapping of two signals
 
 
 Author:
@@ -45,11 +45,45 @@ optional:
 **** required: ******
 SHORT SIGNALE: (reference) sequence signal from ATCG...;
 LONG SIGNAL:   (nanopore) raw electrical current signal;
-OUTPUT:   signal alignment result; if not specified, then no output be generated;
+OUTPUT:   signal mapping result; if not specified, then no output be generated;
 **** key parameters: ******
 RADIUS:   warp search radius (default 50);
 LEVEL:    sampling level in continous wavelet (default 3);
 SCALE:    base scale in continous wavelet (default sqrt(2));
+
+
+
+
+#===============
+# Output format:
+#===============
+
+         1          2                3               4             5               6                            7
+------------------------------------------------------------------------------------------------------------------------
+         1          1 |             316             550 |        -1.16628         1.04565          diff:        2.21193
+         2          2 |             347             433 |       -0.526507       -0.560209          diff:       0.033702
+         3          3 |             319             411 |        -1.10436       -0.862165          diff:       0.242199
+         3          4 |             319             409 |        -1.10436       -0.889616          diff:       0.214749
+         3          5 |             319             408 |        -1.10436       -0.903341          diff:       0.201023
+         3          6 |             319             389 |        -1.10436        -1.16412          diff:      0.0597573
+         3          7 |             319             389 |        -1.10436        -1.16412          diff:      0.0597573
+         3          8 |             319             377 |        -1.10436        -1.32883          diff:       0.224461
+         3          9 |             319             391 |        -1.10436        -1.13667          diff:      0.0323067
+
+---------
+[Legend]:
+---------
+
+the 1st column shows the mapping of the first position (e.g., on expected signal) starting from 1,
+the 2nd column shows the mapping of the second position (e.g., on raw signal) starting from 1,
+
+the 3rd column displays the original value of the first input signal (e.g., on expected signal),
+the 4th column displays the original value of the second input signal (e.g., on raw signal),
+
+the 5th column indicates the Z-normalized value of the first input signal (e.g., on expected signal),
+the 6th column indicates the Z-normalized value of the second input signal (e.g., on raw signal),
+
+the 7th column illustrates the absolute difference between the two Z-normalized values.
 
 
 
@@ -64,7 +98,7 @@ SCALE:    base scale in continous wavelet (default sqrt(2));
 ./sig2peak -i example/002a08b9-0248-4929-9759-2d5c0942076d.seqsig -o 002a08b9-0248-4929-9759-2d5c0942076d.peak_seqsig -s 2.828 -z 1
 ./sig2peak -i example/002a08b9-0248-4929-9759-2d5c0942076d.rawsig -o 002a08b9-0248-4929-9759-2d5c0942076d.peak_rawsig -s 22.715 -z 1  #-> 22.715=2.828*126965/15807:wq
 
-#-> 3. perform alignment between nanopore signal and genome signal.
+#-> 3. perform mapping between nanopore signal and genome signal.
 ./cwDTW -i example/002a08b9-0248-4929-9759-2d5c0942076d.seqsig -p example/002a08b9-0248-4929-9759-2d5c0942076d.rawsig -o align_out
 
 

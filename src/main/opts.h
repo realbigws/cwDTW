@@ -86,7 +86,7 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
                      "**** required: ******\n"
                      "SHORT SIGNALE: (reference) sequence signal from ATCG...;\n"
                      "LONG SIGNAL:   (nanopore) raw electrical current signal;\n"
-                     "OUTPUT:   signal alignment result; if not specified, then no output be generated;  \n"
+                     "OUTPUT:   signal mapping result; if not specified, then no output be generated;  \n"
                      "**** key parameters: ******\n"
                      "RADIUS:   warp search radius (default 50);\n"
                      "LEVEL:    sampling level in continous wavelet (default 3);\n"
