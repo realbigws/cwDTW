@@ -24,6 +24,9 @@ int g::Mer2Signal::FiveMer2Index(char const* fivemer)
 		case 'T':
 			tag = 3;
 			break;
+		default:
+			fprintf(stderr,"BAD CODE HERE !! %c \n",fivemer[i]);
+			exit(-1);
 		}
 		tag <<= (4-i)*2;
 		idx |= tag;
