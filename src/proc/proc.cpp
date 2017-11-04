@@ -9,6 +9,96 @@
 using namespace std;
 
 //================== Sheng added for Transfer alignment between Renmin_style and Sheng_style ==================//
+
+//-------- Ali_To_Cor -------------//
+int g::proc::Ali_To_Cor(vector <int> &ali2, vector <vector <int> > &AFP_Cor)
+{
+	int i,k;
+	int num;
+	int ii,jj;
+	int count;
+	int isFirst;
+	int isLast;
+	int type;
+	int head1,head2;
+	int index;
+
+	//init
+	count=-999999;
+	num=0;
+	head1=-1;
+	head2=-1;
+	isLast=0;
+	isFirst=1;
+	type=0;
+	ii=-1;
+	jj=-1;
+	int moln2=(int)ali2.size();
+	int thres=0;
+	AFP_Cor.clear();
+	for(i=0;i<moln2;i++)
+	{
+		if(ali2[i]==-1) //purely blank
+		{
+			if(isFirst==0)
+			{
+				if(count>=thres) 
+				{
+					vector <int> tmp_rec;
+					tmp_rec.push_back(head1);
+					tmp_rec.push_back(head2);
+					tmp_rec.push_back(count);
+					AFP_Cor.push_back(tmp_rec);
+					num+=count;
+				}
+				count=0;
+				isFirst=1;
+			}
+			continue;
+		}
+
+		if(isFirst==1)
+		{
+ws_init:
+			isFirst=0;
+			ii=ali2[i];
+			type=1; // >0 mode
+			jj=i;
+			count=1;
+			head1=ii;
+			head2=jj;
+			continue;
+		}
+		if(i==jj+1&&ali2[i]==ii+1)
+		{
+			ii=ali2[i];
+			jj=i;
+			count++;
+			continue;
+		}
+
+ws_end:
+		if(count>=thres) 
+		{
+			vector <int> tmp_rec;
+			tmp_rec.push_back(head1);
+			tmp_rec.push_back(head2);
+			tmp_rec.push_back(count);
+			AFP_Cor.push_back(tmp_rec);
+			num+=count;
+		}
+
+		if(isLast==1)goto end;
+		else goto ws_init;
+	}
+
+	if(count==999999)goto end;
+	isLast=1;
+	goto ws_end;
+end:
+	return num;
+}
+
 //------- given Ali1 return AliPair ------//
 void g::proc::Ali1_To_AliPair(int n1,int n2,vector <int> &ali1,
 	vector<pair<int,int> > & alignment_out)
@@ -340,7 +430,7 @@ void g::proc::Sheng_To_Renmin_bound(int moln1,int moln2,
 
 //================================= sheng modify ======================//over
 
-
+//--------- Z normalization ------------//
 void g::proc::ZScoreNormalize(std::vector< double >& signals, double* avg, double* stdev)
 {
 	double sum = std::accumulate(signals.begin(), signals.end(), 0.0);
@@ -362,167 +452,7 @@ void g::proc::ZScoreNormalize(std::vector< double >& signals, double* avg, doubl
 	if(stdev){*stdev = deviation;}
 }
 
-void g::proc::RemoveHotSpot(std::vector< double >& signals, int thre)
-{
-	double mean =  std::accumulate(signals.begin(), signals.end(), 0.0) / signals.size();
-
-	double acc = 0.0;
-	for(size_t i = 0; i < signals.size(); i++){
-		acc += signals[i]*signals[i];
-	}
-
-	double deviation = std::sqrt(acc/signals.size());
-
-	double threshold = mean+thre*deviation;
-	
-	for(size_t i = 0; i < signals.size(); i++){
-		if(signals[i] > threshold){
-			signals[i] = threshold;
-		}
-		else if(signals[i] < -threshold){
-			signals[i] = -threshold;
-		}
-	}
-}
-
-//used in WaveDenoise
-static double GetThre(double* coeff, int size)  
-{  
-    double thr = 0.0;  
-    double sigma = 0.0;  
-	double copy[size];
-	
-    for(int i = 0; i < size; i++){  
-        copy[i] = std::fabs(coeff[i]);
-	}
-  
-    std::sort(copy, copy+size);  
-  
-    if (size % 2 == 0 && size >= 2){  
-        sigma = (copy[size/2-1]+copy[size/2])/2/0.6745; 
-	}
-    else{
-        sigma = copy[size/2]/0.6745;  
-	}
-  
-    double N = size;  
-    thr = sigma *sqrt(2.0*log(N));    
-
-    return thr;  
-}
-
-// cutoff
-static void WThresh(double* coeff, double thre, int size, bool soft)  
-{   
-	
-    if (!soft){  //hard threshold
-        for(int i = 0; i < size; i++){  
-            if(std::fabs(coeff[i]) < thre){
-                coeff[i] = 0.0;  
-			}
-        }  
-    }  
-    else{   //soft threshold
-        for(int i = 0; i < size; i++){  
-            if(std::fabs(coeff[i]) < thre){  
-                coeff[i] = 0.0;  
-            }  
-            else{  
-                if(coeff[i] < 0.0){  
-                    coeff[i] = thre - std::fabs(coeff[i]);  
-				}
-                else{  
-                    coeff[i] = std::fabs(coeff[i]) - thre;    
-				}
-            }  
-        }  
-	}  
-} 
-
-static double absmax(double *array, int N){
-	double max;
-	int i;
-
-	max = 0.0;
-	for (i = 0; i < N; ++i) {
-		if (std::fabs(array[i]) >= max) {
-			max = std::fabs(array[i]);
-		}
-	}
-
-	return max;
-}
-
-/*
-static void PyrWThre(wt_object wt, int lvl_thre){
-	int J = wt->J;
-	int t = wt->length[0];
-	
-	for(int i = 0; i < J; ++i){
-		if(i+1 >= lvl_thre){
-			int idx = t;
-			int lvlen = wt->length[i+1];
-			double thre = GetThre(wt->output+idx, lvlen);
-			WThresh(wt->output+idx, thre, lvlen, true);  
-		}
-// 		printf("Level %d Access : output[%d] Length : %d \n", i + 1,t,wt->length[i+1]);
-		t += wt->length[i+1];
-	}
-}
-*/
-
-/*
-void g::proc::WaveDenoise(std::vector< double >& signals, bool soft)
-{
-	double* sigs = &signals[0];		//sst_nino3.dat
-
-	size_t N = signals.size();
-	int npyr = 10; 			// Total Number of scales
-
-	wave_object obj = wave_init("db4");
-	
-	wt_object wt = wt_init(obj, "dwt", N, npyr);// Initialize the wavelet transform object
-	setDWTExtension(wt, "sym");// Options are "per" and "sym". Symmetric is the default option
-	setWTConv(wt, "direct");
-	
-	dwt(wt, sigs);// Perform DWT
-
-	PyrWThre(wt, npyr-1);
-	
-	std::vector<double> output(wt->outlength);
-	double* outs = &output[0];
-	
-	idwt(wt, outs); // Inverse Discrete Wavelet Packet Transform
-
-// 	std::vector<double> diff;
-// 	for(int i = 0; i < N; ++i){
-// 		diff[i] = (sigs[i] - outs[i]);// /sigs[i];
-// 	}
-// 	wt_summary(wt); // Tree Summary
-// 	printf("\n MAX %g \n", absmax(&diff[0], wt->siglength)); // If Reconstruction succeeded then the output should be a small value.
-
-	wave_free(obj);
-	wt_free(wt);
-	
-	signals = output;
-}
-*/
-
-void g::proc::MedianFilter(std::vector<double>& signals, int width)
-{
-	double tmp[width];
-	int width_2 = width*.5;
-	std::vector<double> nsignl = signals;
-	
-	for(size_t i = width_2; i < signals.size()-width_2-1; i++){
-		memcpy(tmp, &(signals[i-width_2]), sizeof(double)*width);
-		std::sort(tmp, tmp+width);
-		nsignl[i] = tmp[width_2];
-	}
-	
-	signals = nsignl;
-}
-
+//--------- Peak picking -------------//
 void g::proc::Diff(const std::vector<double>& raw, std::vector<double>& diff)
 {
 	diff.resize(raw.size());
@@ -569,40 +499,48 @@ void g::proc::PeakPick(const std::vector<double>& raw, std::vector<std::pair<int
 	peaks.push_back(std::make_pair(raw.size()-1, raw[raw.size()-1]));
 }
 
-double g::proc::DynamicTimeWarping(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<int,int> >& alignment)
-{	
+
+//--------------- Dynamic Time Warping --------------//(global)
+double g::proc::DynamicTimeWarping_global(
+	const std::vector<double>& seq1, const std::vector<double>& seq2, 
+	std::vector<std::pair<int,int> >& alignment)
+{
+	//-- create score matrix --//
 	double* score[seq1.size()];
-	double diff;
-	
 	for(int i = 0; i < seq1.size(); i++){
 		score[i] = new double[seq2.size()];
 	}
-	
+
+	//-- initialize score matrix --//
 	for(int i = 0; i < seq1.size(); i++){
 		for(int j = 0; j < seq2.size(); j++){
-			score[i][j] = abs(seq1[i]-seq2[j]);
+			score[i][j] = fabs(seq1[i]-seq2[j]);
 		}
 	}
-	
+
+	//-- initialize X-axix --//
 	for(int i = 1; i < seq1.size(); i++){
 		score[i][0] += score[i-1][0];
 	}
-	
+
+	//-- initialize Y-axix --//
 	for(int j = 1; j < seq2.size(); j++){
 		score[0][j] += score[0][j-1];
 	}
-	
+
+	//-- fill-up score matrix --//
 	for(int i = 1; i < seq1.size(); i++){
 		for(int j = 1; j < seq2.size(); j++){
 			score[i][j] += std::min(std::min(score[i-1][j], score[i][j-1]), score[i-1][j-1]);
 		}
 	}
-	
-	diff = score[seq1.size()-1][seq2.size()-1];
-	
-	int i = seq1.size()-1, j = seq2.size()-1;
 
+	//-- obtain maximal score --//
+	double diff = score[seq1.size()-1][seq2.size()-1];
+
+	//-- generate alignment --//
 	alignment.clear();
+	int i = seq1.size()-1, j = seq2.size()-1;
 	while(true){
 		alignment.push_back(std::make_pair(i,j));
 		int ipre = i-1 < 0 ? 0 : i-1;
@@ -624,17 +562,114 @@ double g::proc::DynamicTimeWarping(const std::vector<double>& seq1, const std::v
 			break;
 		}
 	}
-	
 	std::reverse(alignment.begin(), alignment.end());
-	
+
+	//-- delete created matrix --//
 	for(int i = 0; i < seq1.size(); i++){
 		delete [] score[i];
 	}
-	
+
+	//-- return distance --//
 	return diff;
 }
 
-static inline double& SCORE(int i, int j, std::vector<double>* score, const std::vector<std::pair<int,int> >& bound){
+//--------------- Dynamic Time Warping --------------//(local)
+//-> we let X (i.e., seq1) be the smaller input
+double g::proc::DynamicTimeWarping_local(
+	const std::vector<double>& seq1, const std::vector<double>& seq2, 
+	std::vector<std::pair<int,int> >& alignment)
+{
+	//-- create score matrix --//
+	double* score[seq1.size()];
+	for(int i = 0; i < seq1.size(); i++){
+		score[i] = new double[seq2.size()];
+	}
+
+	//-- initialize score matrix --//
+	for(int i = 0; i < seq1.size(); i++){
+		for(int j = 0; j < seq2.size(); j++){
+			score[i][j] = fabs(seq1[i]-seq2[j]);
+		}
+	}
+
+	//-- initialize X-axix --//
+	for(int i = 1; i < seq1.size(); i++){
+		score[i][0] += score[i-1][0];
+	}
+
+	//-- initialize Y-axix --//
+//	for(int j = 1; j < seq2.size(); j++){
+//		score[0][j] += score[0][j-1];
+//	}
+
+	//-- fill-up score matrix --//
+	for(int i = 1; i < seq1.size(); i++){
+		for(int j = 1; j < seq2.size(); j++){
+			score[i][j] += std::min(std::min(score[i-1][j], score[i][j-1]), score[i-1][j-1]);
+		}
+	}
+
+	//-- obtain maximal score --//
+	int minval=DBL_MAX;
+	int min_j=0;
+	for(int j = 0; j < seq2.size(); j++){
+		if(score[seq1.size()-1][j]<minval){
+			minval=score[seq1.size()-1][j];
+			min_j=j;
+		}
+	}	
+	double diff = score[seq1.size()-1][min_j];
+
+	//-- generate alignment --//
+	alignment.clear();
+	int i = seq1.size()-1, j = min_j;
+	while(true){
+		alignment.push_back(std::make_pair(i,j));
+		int ipre = i-1 < 0 ? 0 : i-1;
+		int jpre = j-1 < 0 ? 0 : j-1;
+		
+		double premin = std::min(std::min(score[ipre][j], score[i][jpre]), score[ipre][jpre]);
+		
+		if(premin == score[ipre][jpre]){
+			i = ipre; j = jpre;
+		}
+		if(premin == score[ipre][j]){
+			i = ipre;
+		}
+		if(premin == score[i][jpre]){
+			j = jpre;
+		}
+//		if(i == 0 /&& j == 0){
+		if( i == 0 ){
+			alignment.push_back(std::make_pair(i,j));
+			break;
+		}
+	}
+	std::reverse(alignment.begin(), alignment.end());
+
+	//-- delete created matrix --//
+	for(int i = 0; i < seq1.size(); i++){
+		delete [] score[i];
+	}
+
+	//-- return distance --//
+	return diff;
+}
+
+
+//------- if not specified, then DTW indicates global DTW ---------//
+double g::proc::DynamicTimeWarping(
+	const std::vector<double>& seq1, const std::vector<double>& seq2, 
+	std::vector<std::pair<int,int> >& alignment)
+{	
+	return DynamicTimeWarping_global(seq1,seq2,alignment);
+}
+
+
+//---------------------- constrained (bound) Dynamnic Time Warping ------------------------//
+static inline double& SCORE(int i, int j, 
+	std::vector<double>* score, const std::vector<std::pair<int,int> >& bound)
+{
 	static double invalid = DBL_MAX;
 	if(bound[i].first <= j && j <= bound[i].second){	
 		return score[i][j-bound[i].first];
@@ -644,25 +679,14 @@ static inline double& SCORE(int i, int j, std::vector<double>* score, const std:
 	}
 }
 
-double g::proc::BoundDynamicTimeWarping(const std::vector<double>& sequence1, const std::vector<double>& sequence2, 
+double g::proc::BoundDynamicTimeWarping(
+	const std::vector<double>& sequence1, const std::vector<double>& sequence2, 
 	const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment)
 {
 	/*check order*/
-	bool firstorder = true;
 	const std::vector<double>* seq1, * seq2;
-	
-//	if(sequence1.size() > sequence2.size()){
-//		firstorder = false;
-//	}
-	
-	if(!firstorder){		//genome first
-		seq1 = &sequence2;
-		seq2 = &sequence1;
-	}
-	else{
-		seq1 = &sequence1;
-		seq2 = &sequence2;
-	}
+	seq1 = &sequence1;
+	seq2 = &sequence2;
 	
 	std::vector<double> score[seq1->size()];
 	double diff;
@@ -730,17 +754,14 @@ double g::proc::BoundDynamicTimeWarping(const std::vector<double>& sequence1, co
 	}
 	
 	std::reverse(alignment.begin(), alignment.end());
-	
-	if(!firstorder){
-		for(int i = alignment.size(); i--;){
-			std::swap(alignment[i].first, alignment[i].second);
-		}
-	}
-	
+
 	return diff;
 }
 
-double g::proc::BoundDynamicTimeWarpingR(const std::vector<double>& seq1, const std::vector<double>& seq2, const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment)
+//--------- restricted cDTW (for nanopore analysis ONLY) ----------------//
+double g::proc::BoundDynamicTimeWarpingR(
+	const std::vector<double>& seq1, const std::vector<double>& seq2, 
+	const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment)
 {	
 	std::vector<double> score[seq1.size()];
 	double diff;

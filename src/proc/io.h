@@ -18,7 +18,9 @@ bool ReadSignalSequence(const char* name, std::vector<double>& signals);
 
 bool ReadSignalSequence_int(const char* name, std::vector<int>& signals);
 
-bool WriteSignalSequence(const char* name, const std::vector<int>& signals);
+bool WriteSignalSequence(const char* name, const std::vector<double>& signals);
+
+bool WriteSignalSequence_int(const char* name, const std::vector<int>& signals);
 
 }
 

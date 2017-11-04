@@ -28,13 +28,13 @@ bool g::io::ReadATCG(const char* name, std::vector<char>& genomes)
 
 bool g::io::WriteATCG(const char* name, const std::vector<char>& genomes)
 {
-	std::ofstream out(name);
+    std::ofstream out(name);
     if(!out.good()) {
         return false;
     }
     
     for(size_t i = 0; i < genomes.size(); i++){
-		out<<genomes[i]<<std::endl;
+        out<<genomes[i]<<std::endl;
     }
     
     out.close();
@@ -82,9 +82,9 @@ bool g::io::ReadSignalSequence_int(const char* name, std::vector<int>& signals)
     return true;
 }
 
-bool g::io::WriteSignalSequence(const char* name, const std::vector<int>& signals)
+bool g::io::WriteSignalSequence(const char* name, const std::vector<double>& signals)
 {
-	std::ofstream out(name);
+    std::ofstream out(name);
     if(!out.good()) {
         return false;
     }
@@ -97,3 +97,20 @@ bool g::io::WriteSignalSequence(const char* name, const std::vector<int>& signal
     
     return true;
 }
+
+bool g::io::WriteSignalSequence_int(const char* name, const std::vector<int>& signals)
+{
+    std::ofstream out(name);
+    if(!out.good()) {
+        return false;
+    }
+
+    for(size_t i = 0; i < signals.size(); i++){
+                out<<signals[i]<<std::endl;
+    }
+
+    out.close();
+
+    return true;
+}
+

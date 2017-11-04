@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	std::vector<int> signals;
 	g::io::ReadATCG(opts.input, genomes);
 	Genomes2SignalSequence(genomes, signals, scale);
-	g::io::WriteSignalSequence(opts.output, signals);
+	g::io::WriteSignalSequence_int(opts.output, signals);
 
 	return 0;
 }
