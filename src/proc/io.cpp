@@ -28,17 +28,17 @@ bool g::io::ReadATCG(const char* name, std::vector<char>& genomes)
 
 bool g::io::WriteATCG(const char* name, const std::vector<char>& genomes)
 {
-    std::ofstream out(name);
-    if(!out.good()) {
-        return false;
-    }
-    
+    std::ostringstream o;
     for(size_t i = 0; i < genomes.size(); i++){
-        out<<genomes[i]<<std::endl;
+        o<<genomes[i]<<std::endl;
     }
-    
-    out.close();
-    
+    std::string s=o.str();
+
+    //--- output ----//
+    FILE *fp=fopen(name,"wb");
+    fprintf(fp,"%s",s.c_str());
+    fclose(fp);
+
     return true;
 }
 
@@ -84,33 +84,34 @@ bool g::io::ReadSignalSequence_int(const char* name, std::vector<int>& signals)
 
 bool g::io::WriteSignalSequence(const char* name, const std::vector<double>& signals)
 {
-    std::ofstream out(name);
-    if(!out.good()) {
-        return false;
-    }
-    
+    std::ostringstream o;
     for(size_t i = 0; i < signals.size(); i++){
-		out<<signals[i]<<std::endl;
+        o<<signals[i]<<std::endl;
     }
-    
-    out.close();
-    
+    std::string s=o.str();
+
+    //--- output ----//
+    FILE *fp=fopen(name,"wb");
+    fprintf(fp,"%s",s.c_str());
+    fclose(fp);
+ 
     return true;
 }
 
 bool g::io::WriteSignalSequence_int(const char* name, const std::vector<int>& signals)
 {
-    std::ofstream out(name);
-    if(!out.good()) {
-        return false;
-    }
-
+    std::ostringstream o;
     for(size_t i = 0; i < signals.size(); i++){
-                out<<signals[i]<<std::endl;
+        o<<signals[i]<<std::endl;
     }
+    std::string s=o.str();
 
-    out.close();
+    //--- output ----//
+    FILE *fp=fopen(name,"wb");
+    fprintf(fp,"%s",s.c_str());
+    fclose(fp);
 
     return true;
 }
+
 
