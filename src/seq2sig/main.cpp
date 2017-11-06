@@ -10,19 +10,36 @@
 #include "util/exception.h"
 #include "5mer/5mer_index.h"
 
-bool Genomes2SignalSequence(const std::vector<char>& genomes, std::vector<int>& signals, int scale)
+bool Genomes2SignalSequence(const std::vector<char>& genomes, 
+	std::vector<int>& index, std::vector<int>& signals, int scale, int FIVE_or_SIX)
 {
-	std::vector <int> index;
-	g::Mer2Signal::Genome2Index(genomes, index);
-
-	size_t bound = genomes.size()-5;//genomes.size()%5;
-	for(size_t i = 0; i < bound; i++){
-		double sigval = 3.8*g::Mer2Signal::AvgSignalAt(index[i]);
-		for(int c = scale; c--;){
-			signals.push_back((int)sigval);
+	size_t bound;
+	if(FIVE_or_SIX==0) //-> 5mer model
+	{
+		g::Mer2Signal::Genome2Index_5mer(genomes, index);
+		bound = genomes.size()-5;//genomes.size()%5;
+		for(size_t i = 0; i < bound; i++){
+			double sigval = g::Mer2Signal::AvgSignalAt_5mer(index[i]);
+			sigval = 5.7*sigval+14;
+			for(int c = scale; c--;){
+				signals.push_back(sigval);
+			}
+		}
+	}
+	else
+	{
+		g::Mer2Signal::Genome2Index_6mer(genomes, index);
+		bound = genomes.size()-6;//genomes.size()%5;
+		for(size_t i = 0; i < bound; i++){
+			double sigval = g::Mer2Signal::AvgSignalAt_6mer(index[i]);
+			sigval = 5.7*sigval+14;
+			for(int c = scale; c--;){
+				signals.push_back(sigval);
+			}
 		}
 	}
 
+	//---- tail five_mer ------//
 //	for(size_t i = bound; i < genomes.size(); i++){
 //		for(int c = scale; c--;){
 //			signals.push_back(100);
@@ -30,6 +47,7 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes, std::vector<int>& 
 //	}
 }
 
+//---------------------- main ---------------------//
 int main(int argc, char **argv)
 {
 	std::string input="";
@@ -37,6 +55,7 @@ int main(int argc, char **argv)
 
 	struct options opts;
 	opts.scale=1;
+	opts.kmer=0;
 	if(GetOpts(argc, argv, &opts) < 0){
 		EX_TRACE("**WRONG INPUT!**\n");
 		return -1;
@@ -44,7 +63,6 @@ int main(int argc, char **argv)
 
 	input=opts.input;
 	output=opts.output;
-	int scale=opts.scale;
 	if(input=="" || output=="")
 	{
 		fprintf(stderr,"input or output is NULL \n");
@@ -52,9 +70,10 @@ int main(int argc, char **argv)
 	}
 
 	std::vector<char> genomes;
+	std::vector<int> index;
 	std::vector<int> signals;
 	g::io::ReadATCG(opts.input, genomes);
-	Genomes2SignalSequence(genomes, signals, scale);
+	Genomes2SignalSequence(genomes, index, signals, opts.scale, opts.kmer);
 	g::io::WriteSignalSequence_int(opts.output, signals);
 
 	return 0;

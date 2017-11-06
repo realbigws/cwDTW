@@ -1,6 +1,8 @@
 #include <iostream>
 #include "5mer_index.h"
 #include "5mer_index_table.rc"
+#include "5mer_index_official.rc"
+#include "6mer_index_official.rc"
 
 
 //---------- Nucleotide_to_Int ----------//
@@ -31,11 +33,11 @@ int g::Mer2Signal::Nucleotide_to_Int(char c)
 
 
 //------------ given genome, transfer to 5-mer index ---------------//
-void g::Mer2Signal::Genome2Index(const std::vector <char> &input, std::vector <int> &index)
+void g::Mer2Signal::Genome2Index_5mer(const std::vector <char> &input, std::vector <int> &index)
 {
 	int div=256;
 	size_t size=input.size();
-	index.assign(size,0);
+	index.assign(size,-1);
 
 	short idx = 0;
 	for(int i = 0; i < 5; i++)
@@ -56,58 +58,48 @@ void g::Mer2Signal::Genome2Index(const std::vector <char> &input, std::vector <i
 	}
 }
 
-
-
-//----------------- FiveMer2Index ---------------------//
-int g::Mer2Signal::FiveMer2Index(char const* fivemer)
+//------------ given genome, transfer to 6-mer index ---------------//
+void g::Mer2Signal::Genome2Index_6mer(const std::vector <char> &input, std::vector <int> &index)
 {
-	const short atag = 0, ctag = 1, gtag = 2, ttag = 3;
-	short idx = 0;
+	int div=1024;
+	size_t size=input.size();
+	index.assign(size,-1);
 	
-	for(int i = 0; i < 5; i++){
-		short tag;
-		switch(fivemer[i]){
-		case 'A':
-			tag = 0;
-			break;
-		case 'C':
-			tag = 1;
-			break;
-		case 'G':
-			tag = 2;
-			break;
-		case 'T':
-			tag = 3;
-			break;
-		default:
-			fprintf(stderr,"BAD CODE HERE !! %c \n",fivemer[i]);
-			exit(-1);
-		}
-		tag <<= (4-i)*2;
+	short idx = 0;
+	for(int i = 0; i < 6; i++)
+	{
+		short tag=Nucleotide_to_Int(input[i]);
+		tag <<= (5-i)*2;
 		idx |= tag;
 	}
+	index[0]=idx;
 	
-	return idx;
+	
+	for(size_t i=6;i<size;i++)
+	{
+		idx=(idx%div)*4;
+		short tag=Nucleotide_to_Int(input[i]);
+		idx += tag;
+		index[i-5]=idx;
+	}
 }
 
-int g::Mer2Signal::FiveMer2Index(char g0, char g1, char g2, char g3, char g4)
+//----------------- FiveMer2Index ---------------------//
+//-> self_model is based on 5mer pore model
+double g::Mer2Signal::AvgSignalAt_SelfModel(int index)
 {
-	char tmp[5] = {g0, g1, g2, g3, g4};
-	return FiveMer2Index(tmp);
+	return index_table_self[index][0];
 }
 
-int g::Mer2Signal::FiveMer2Index(const std::vector<char>& fivemer)
+//-> 5mer case
+double g::Mer2Signal::AvgSignalAt_5mer(int index)
 {
-	char tmp[5] = {fivemer[0], fivemer[1], fivemer[2], fivemer[3],  fivemer[4]};
-	return FiveMer2Index(tmp);
+	return index_table_5mer[index];
 }
 
-int g::Mer2Signal::FiveMer2Index(const std::string& fivemer)
+//-> 6mer case
+double g::Mer2Signal::AvgSignalAt_6mer(int index)
 {
-	return FiveMer2Index(fivemer.c_str());
+	return index_table_6mer[index];
 }
 
-double g::Mer2Signal::AvgSignalAt(int index)
-{
-	return index_table[index][0];
-}

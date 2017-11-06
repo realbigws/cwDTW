@@ -48,26 +48,6 @@ void getRootName(string &in,string &out,char slash)
 
 
 
-//--------- pore_models: from genome to expected signal ----------//
-bool Genomes2SignalSequence(const std::vector<char>& genomes, std::vector<double>& signals, int scale)
-{
-	size_t bound = genomes.size()-5;//genomes.size()%5;
-	for(size_t i = 0; i < bound; i++){
-		int idx = g::Mer2Signal::FiveMer2Index(genomes[i], genomes[i+1], genomes[i+2], genomes[i+3], genomes[i+4]);
-		double sigval = g::Mer2Signal::AvgSignalAt(idx);
-		
-		for(int c = scale; c--;){
-			signals.push_back(sigval);
-		}
-	}
-	
-	for(size_t i = bound; i < genomes.size(); i++){
-		for(int c = scale; c--;){
-			signals.push_back(100);
-		}
-	}
-}
-
 //--------------- continuous wavelet transform (CWT) analysis -----------------//
 /** @scale0: level0 pyramind scale;  @dscale: scale_i = scale0*(2^{i*dsacle} ); @npyr: total number of pyramind*/
 void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, int npyr)
@@ -77,12 +57,9 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 
 	size_t N = raw.size();
 	double dt = 1;//2;		//sample rate	>  maybe we should use 2?
-// 	npyr =  1; 			// Total Number of scales
 
 	wt = cwt_init("dog", 2.0, N, dt, npyr);	//"morlet", "dog", "paul"
 	setCWTScales(wt, scale0, dscale, "pow", 2.0);
-	
-// 	cwt_summary(wt);
 	cwt(wt, sigs);
 
 	output.resize(npyr);
@@ -96,9 +73,6 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 		}
 	}
 	
-// 	double *oup;
-// 	icwt(wt, oup);
-
 	cwt_free(wt);
 }
 
@@ -106,16 +80,6 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 void BoundGeneration(std::vector<std::pair<int,int> >& cosali, 
 	int neib, std::vector<std::pair<int,int> >& bound, int mode)
 {
-
-	bool firstorder = true;
-//	if(cosali[cosali.size()-1].first > cosali[cosali.size()-1].second)
-//		firstorder = false;
-
-	if(!firstorder){                //genome first
-		for(int i = cosali.size(); i--;)
-			std::swap(cosali[i].first, cosali[i].second);
-	}
-
 
 //if(mode!=-1) //-> mode = -1 means Renmin mode
 vector<pair<int,int> > cosali_=cosali;
