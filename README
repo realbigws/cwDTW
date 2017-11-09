@@ -92,7 +92,7 @@ the 7th column illustrates the absolute difference between the two Z-normalized 
 #=========
 
 #-> 1. generate genome signal from DNA sequence via pore model.
-./seq2sig -i example/002a08b9-0248-4929-9759-2d5c0942076d.fasta -o 002a08b9-0248-4929-9759-2d5c0942076d.seqsig -s 1
+./seq2sig -i example/002a08b9-0248-4929-9759-2d5c0942076d.fasta -o 002a08b9-0248-4929-9759-2d5c0942076d.seqsig -s 1 -z 0
 
 #-> 2. generate coarsening signal via peak-pick on CWT spectrum.
 ./sig2peak -i example/002a08b9-0248-4929-9759-2d5c0942076d.seqsig -o 002a08b9-0248-4929-9759-2d5c0942076d.peak_seqsig -s 2.828 -z 1

@@ -14,6 +14,7 @@ struct options {
     char output[65532];
     int scale=1;
     int kmer=0;
+    int zsco=0;
 };
 
 inline int GetOpts(int argc, char **argv, options* opts_){
@@ -24,16 +25,17 @@ inline int GetOpts(int argc, char **argv, options* opts_){
         { "input",    	     required_argument,      NULL,              'i' },
 	{ "scale",           required_argument,      NULL,              's' },
 	{ "kmer",            required_argument,      NULL,              'k' },
+	{ "zsco",            required_argument,      NULL,              'z' },
         { NULL,              0,                      NULL,               0  }
     };
 	
-    if((argc != 5 && argc != 7 && argc != 9) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
-		EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k kmer=0])\n");
-		return -1;
+    if((argc != 5 && argc != 7 && argc != 9 && argc != 11 ) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
+            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k kmer=0])([-z zsco=0])\n");
+            return -1;
     }
     
     int ch;
-    while((ch = getopt_long(argc, argv, "hi:o:s:k:", longopts, NULL))!= -1){
+    while((ch = getopt_long(argc, argv, "hi:o:s:k:z:", longopts, NULL))!= -1){
         switch (ch) {
 
         case '?':
@@ -50,8 +52,9 @@ inline int GetOpts(int argc, char **argv, options* opts_){
 
         case 'h':
         {
-            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k KMER=0])\n");
+            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k KMER=0])([-z zsco=0])\n");
             EX_TRACE("[note]: to use 5mer pore model, set -k 0; to use 6mer pore model, set -k 1\n");
+            EX_TRACE("        if zsco is set to 0, then Z-normalize pore model. \n");
             return -1;
         }
 
@@ -98,6 +101,18 @@ inline int GetOpts(int argc, char **argv, options* opts_){
             }
         }
         break;
+
+        case 'z':
+        {
+            std::istringstream iss(optarg);
+            iss >> opts_->zsco;
+            if (iss.fail()){
+                EX_TRACE("Invalid argument '%s'.", optarg);
+                return -1;
+            }
+        }
+        break;
+
 
         case 0: 
             break;

@@ -11,7 +11,8 @@
 #include "5mer/5mer_index.h"
 
 bool Genomes2SignalSequence(const std::vector<char>& genomes, 
-	std::vector<int>& index, std::vector<int>& signals, int scale, int FIVE_or_SIX)
+	std::vector<int>& index, std::vector<double>& signals, 
+	int scale, int FIVE_or_SIX, int ZSCO_or_NOT)
 {
 	size_t bound;
 	if(FIVE_or_SIX==0) //-> 5mer model
@@ -20,7 +21,14 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 		bound = genomes.size()-5;//genomes.size()%5;
 		for(size_t i = 0; i < bound; i++){
 			double sigval = g::Mer2Signal::AvgSignalAt_5mer(index[i]);
-			sigval = 5.7*sigval+14;
+			if(ZSCO_or_NOT==1) //-> transfer to Zsco
+			{
+				sigval = (sigval-90.208351)/12.832660;
+			}
+			else               //-> use original int value
+			{
+				sigval = (int)(5.7*sigval+14);
+			}
 			for(int c = scale; c--;){
 				signals.push_back(sigval);
 			}
@@ -32,7 +40,14 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 		bound = genomes.size()-6;//genomes.size()%5;
 		for(size_t i = 0; i < bound; i++){
 			double sigval = g::Mer2Signal::AvgSignalAt_6mer(index[i]);
-			sigval = 5.7*sigval+14;
+			if(ZSCO_or_NOT==1) //-> transfer to Zsco
+			{
+				sigval = (sigval-90.208199)/12.868652;
+			}
+			else               //-> use original int value
+			{
+				sigval = (int)(5.7*sigval+14);
+			}
 			for(int c = scale; c--;){
 				signals.push_back(sigval);
 			}
@@ -56,6 +71,7 @@ int main(int argc, char **argv)
 	struct options opts;
 	opts.scale=1;
 	opts.kmer=0;
+	opts.zsco=0;
 	if(GetOpts(argc, argv, &opts) < 0){
 		EX_TRACE("**WRONG INPUT!**\n");
 		return -1;
@@ -71,10 +87,17 @@ int main(int argc, char **argv)
 
 	std::vector<char> genomes;
 	std::vector<int> index;
-	std::vector<int> signals;
+	std::vector<double> signals;
 	g::io::ReadATCG(opts.input, genomes);
-	Genomes2SignalSequence(genomes, index, signals, opts.scale, opts.kmer);
-	g::io::WriteSignalSequence_int(opts.output, signals);
+	Genomes2SignalSequence(genomes, index, signals, 
+		opts.scale, opts.kmer,opts.zsco);
+	if(opts.zsco==1){
+		g::io::WriteSignalSequence(opts.output, signals);
+	}
+	else{
+		std::vector<int> signals_ (signals.begin(), signals.end());
+		g::io::WriteSignalSequence_int(opts.output, signals_);
+	}
 
 	return 0;
 }
