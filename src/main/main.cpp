@@ -362,12 +362,12 @@ void MultiLevel_WaveletDTW(std::vector<double>& in1, std::vector<double>& in2,
 	for(long k = 0; k < tot_size; k++)
 	{
 
-printf("k=%d\n",k);
+//printf("k=%d\n",k);
 
 		//------ peakpick CWT signal -------------//
 		g::proc::PeakPick(sig1[k], sig1peaks);
 		g::proc::PeakPick(sig2[k], sig2peaks);
-		std::cout<<sig1peaks.size()<<"\t"<<sig2peaks.size()<<std::endl;
+//		std::cout<<sig1peaks.size()<<"\t"<<sig2peaks.size()<<std::endl;
 		std::vector<double> peak1(sig1peaks.size());
 		std::vector<double> peak2(sig2peaks.size());
 
