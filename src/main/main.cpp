@@ -50,12 +50,12 @@ void getRootName(string &in,string &out,char slash)
 
 //--------------- continuous wavelet transform (CWT) analysis -----------------//
 /** @scale0: level0 pyramind scale;  @dscale: scale_i = scale0*(2^{i*dsacle} ); @npyr: total number of pyramind*/
-void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, int npyr)
+void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, long npyr)
 {
 	const double* sigs = &raw[0];		//sst_nino3.dat
 	cwt_object wt;
 
-	size_t N = raw.size();
+	long N = raw.size();
 	double dt = 1;//2;		//sample rate	>  maybe we should use 2?
 
 	wt = cwt_init("dog", 2.0, N, dt, npyr);	//"morlet", "dog", "paul"
@@ -63,12 +63,11 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 	cwt(wt, sigs);
 
 	output.resize(npyr);
-	for(size_t k = npyr; k--;){
-		int idx = npyr-k-1;
-		
+	for(long k = npyr; k--;){
+		long idx = npyr-k-1;
 		output[idx].resize(raw.size());
-		size_t offset = k*raw.size();
-		for(size_t i = 0; i < output[idx].size(); i++){
+		long offset = k*raw.size();
+		for(long i = 0; i < output[idx].size(); i++){
 			output[idx][i] = wt->output[i+offset].re;
 		}
 	}
@@ -77,19 +76,19 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 }
 
 //----------------- boundary generation for constrained dynamic time warping (cDTW) -------------//
-void BoundGeneration(std::vector<std::pair<int,int> >& cosali, 
-	int neib, std::vector<std::pair<int,int> >& bound, int mode)
+void BoundGeneration(std::vector<std::pair<long,long> >& cosali, 
+	int neib, std::vector<std::pair<long,long> >& bound, int mode)
 {
 
 //if(mode!=-1) //-> mode = -1 means Renmin mode
-vector<pair<int,int> > cosali_=cosali;
+vector<pair<long,long> > cosali_=cosali;
 if(mode==1) //-> use partial-diagonol alignment
 {
 
 	//-------- generate partial-diagonol alignment -------//
-	vector<pair<int,int> > cosali2;
+	vector<pair<long,long> > cosali2;
         cosali2.push_back(cosali[0]);
-        for(int i = 1; i < cosali.size(); i++){
+        for(long i = 1; i < cosali.size(); i++){
                 if(cosali[i].first != cosali2[cosali2.size()-1].first){
                         cosali2.push_back(cosali[i]);
                 }
@@ -99,14 +98,14 @@ if(mode==1) //-> use partial-diagonol alignment
         }
 
 	cosali_.clear();
-	for(int i = 1; i < cosali2.size(); i++)
+	for(long i = 1; i < cosali2.size(); i++)
 	{
-		int pre_idx = cosali2[i-1].first, cur_idx = cosali2[i].first;
-		int pre_anchor = cosali2[i-1].second, cur_anchor = cosali2[i].second;
+		long pre_idx = cosali2[i-1].first, cur_idx = cosali2[i].first;
+		long pre_anchor = cosali2[i-1].second, cur_anchor = cosali2[i].second;
 		double anchor_diff = (cur_anchor-pre_anchor)/(cur_idx-pre_idx);
-		for(int k = pre_idx, count = 0; k < cur_idx; k++, count++)
+		for(long k = pre_idx, count = 0; k < cur_idx; k++, count++)
 		{
-			int mid = pre_anchor+(int)(count*anchor_diff);  //assign point relationship
+			long mid = pre_anchor+(long)(count*anchor_diff);  //assign point relationship
 			if(mid<pre_anchor)mid=pre_anchor;
 			if(mid>cur_anchor)mid=cur_anchor;
 			cosali_.push_back(make_pair(k,mid));
@@ -126,13 +125,13 @@ if(mode==1) //-> use partial-diagonol alignment
 
 	//---------- use block bound ------------//start
 	//-> get signal length
-	int moln1=cosali_[cosali_.size()-1].first+1;
-	int moln2=cosali_[cosali_.size()-1].second+1;
+	long moln1=cosali_[cosali_.size()-1].first+1;
+	long moln2=cosali_[cosali_.size()-1].second+1;
 	//-> renmin align to sheng style
-	std::vector<std::pair<int,int> > align_sheng;
+	std::vector<std::pair<long,long> > align_sheng;
 	Renmin_To_Sheng_align(moln1,moln2,cosali_,align_sheng);
 	//-> get bound in sheng style
-	std::vector<std::pair<int,int> > bound_sheng;
+	std::vector<std::pair<long,long> > bound_sheng;
 	From_Align_Get_Bound(moln1,moln2,align_sheng,bound_sheng,neib);
 	//-> transfer bound to renmin style
 	Sheng_To_Renmin_bound(moln1,moln2,bound_sheng,bound);
@@ -203,46 +202,46 @@ if(mode==1) //-> use partial-diagonol alignment
 
 //====================== FastDTW ===================//
 void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
-	std::vector<std::pair<int,int> >& alignment, int radius, int max_level, int mode,
+	std::vector<std::pair<long,long> >& alignment, long radius, long max_level, int mode,
 	double* totaldiff = 0)
 {
 	double tdiff;
-	vector <vector<pair<int, double> > > sig1peaks, sig2peaks;
-	int length1 = in1.size(), length2 = in2.size();
+	vector <vector<pair<long, double> > > sig1peaks, sig2peaks;
+	long length1 = in1.size(), length2 = in2.size();
 	
 	//---- determine level -------//
-	int l1=1;
+	long l1=1;
 	for(;;)
 	{
-		int num1=pow(2,l1);
+		long num1=pow(2,l1);
 		if(length1/num1<radius+2)break;
 		l1++;
 	}
-	int l2=1;
+	long l2=1;
 	for(;;)
 	{
-		int num2=pow(2,l2);
+		long num2=pow(2,l2);
 		if(length2/num2<radius+2)break;
 		l2++;
 	}
-	int level=l1<l2?l1:l2;
+	long level=l1<l2?l1:l2;
 	if(level>max_level)level=max_level;
 
 	//---- create sigpeak ------//
-	int cur_level=1;
-	for(int k=level;k>=0;k--)
+	long cur_level=1;
+	for(long k=level;k>=0;k--)
 	{
-		vector<pair<int, double> > sig1peaks_cur;
-		vector<pair<int, double> > sig2peaks_cur;
+		vector<pair<long, double> > sig1peaks_cur;
+		vector<pair<long, double> > sig2peaks_cur;
 
 		//------ using Equally Averaging ------//(just for comparison)
 		//--> proc peak1
-		int cur1=0;
-		int num1=pow(2,cur_level);
-		for(int i = 0; i < length1/num1 -1; i++)
+		long cur1=0;
+		long num1=pow(2,cur_level);
+		for(long i = 0; i < length1/num1 -1; i++)
 		{
 			double val=0;
-			for(int j=0;j<num1;j++)
+			for(long j=0;j<num1;j++)
 			{
 				val+=in1[cur1];
 				cur1++;
@@ -251,10 +250,10 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 			sig1peaks_cur.push_back(make_pair(i*num1,val));
 		}
 		{
-			int i=length1/num1-1;
-			int cc=0;
+			long i=length1/num1-1;
+			long cc=0;
 			double val=0;
-			for(int j=cur1;j<in1.size();j++)
+			for(long j=cur1;j<in1.size();j++)
 			{
 				val+=in1[j];
 				cc++;
@@ -263,12 +262,12 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 			sig1peaks_cur.push_back(make_pair(in1.size()-1,val));
 		}
 		//--> proc peak2
-		int cur2=0;
-		int num2=pow(2,cur_level);
-		for(int i = 0; i < length2/num2 -1; i++)
+		long cur2=0;
+		long num2=pow(2,cur_level);
+		for(long i = 0; i < length2/num2 -1; i++)
 		{
 			double val=0;
-			for(int j=0;j<num2;j++)
+			for(long j=0;j<num2;j++)
 			{
 				val+=in2[cur2];
 				cur2++;
@@ -277,10 +276,10 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 			sig2peaks_cur.push_back(make_pair(i*num2,val));
 		}
 		{
-			int i=length2/num2-1;
-			int cc=0;
+			long i=length2/num2-1;
+			long cc=0;
 			double val=0;
-			for(int j=cur2;j<in2.size();j++)
+			for(long j=cur2;j<in2.size();j++)
 			{
 				val+=in2[j];
 				cc++;
@@ -296,15 +295,15 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 	}
 
 	//----------- perform pyamid DTW ----------------//
-	for(int k=0;k<level;k++)
+	for(long k=0;k<level;k++)
 	{
 		//--- extract peak ----//
 		vector<double> peak1(sig1peaks[k].size());
 		vector<double> peak2(sig2peaks[k].size());
-		for(int i = sig1peaks[k].size(); i--;){
+		for(long i = sig1peaks[k].size(); i--;){
 			peak1[i] = sig1peaks[k][i].second;
 		}
-		for(int i = sig2peaks[k].size(); i--;){
+		for(long i = sig2peaks[k].size(); i--;){
 			peak2[i] = sig2peaks[k][i].second;
 		}
 		
@@ -315,28 +314,28 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 		}
 		else{
 			//----- ReMapIndex_partI (map ground level upon k-th level) -----//
-			int c = 0;
-			for(int i = 0; i < alignment.size(); i++){
+			long c = 0;
+			for(long i = 0; i < alignment.size(); i++){
 				while(sig1peaks[k][c].first < alignment[i].first){
 					c++;
 				}
 				alignment[i].first = c;	
 			}
 			
-			int d = 0;
-			for(int i = 0; i < alignment.size(); i++){
+			long d = 0;
+			for(long i = 0; i < alignment.size(); i++){
 				while(sig2peaks[k][d].first < alignment[i].second){
 					d++;
 				}
 				alignment[i].second = d;	
 			}
 			//----- cDWT (constrained DWT) -------//
-			vector<pair<int,int> > bound;
+			vector<pair<long,long> > bound;
 			BoundGeneration(alignment, radius, bound, mode);
 			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
 		}
 		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
-		for(int i = alignment.size(); i--;){
+		for(long i = alignment.size(); i--;){
 			alignment[i].first = sig1peaks[k][alignment[i].first].first;
 			alignment[i].second = sig2peaks[k][alignment[i].second].first;
 		}
@@ -352,29 +351,32 @@ void FastDTW(std::vector<double>& in1, std::vector<double>& in2,
 //====================== continous wavelet dynamic time warping (cwDTW) ========================//
 void MultiLevel_WaveletDTW(std::vector<double>& in1, std::vector<double>& in2,
 	std::vector<std::vector<double> >& sig1, std::vector<std::vector<double> >& sig2, 
-	std::vector<std::pair<int,int> >& alignment, int radius, int test, int mode, 
+	std::vector<std::pair<long,long> >& alignment, long radius, int test, int mode, 
 	double* totaldiff = 0)
 {
 	double tdiff;
-	std::vector<std::pair<int, double> > sig1peaks, sig2peaks;
+	std::vector<std::pair<long, double> > sig1peaks, sig2peaks;
 	double length1 = sig1[0].size(), length2 = sig2[0].size();
 
-	int tot_size=sig1.size();
-	for(int k = 0; k < tot_size; k++)
+	long tot_size=sig1.size();
+	for(long k = 0; k < tot_size; k++)
 	{
+
+printf("k=%d\n",k);
+
 		//------ peakpick CWT signal -------------//
 		g::proc::PeakPick(sig1[k], sig1peaks);
 		g::proc::PeakPick(sig2[k], sig2peaks);
-//		std::cout<<sig1peaks.size()<<"\t"<<sig2peaks.size()<<std::endl;
+		std::cout<<sig1peaks.size()<<"\t"<<sig2peaks.size()<<std::endl;
 		std::vector<double> peak1(sig1peaks.size());
 		std::vector<double> peak2(sig2peaks.size());
 
 
 		//-------- use peak picking result ---------//
-		for(int i = sig1peaks.size(); i--;){
+		for(long i = sig1peaks.size(); i--;){
 			peak1[i] = sig1peaks[i].second;
 		}
-		for(int i = sig2peaks.size(); i--;){
+		for(long i = sig2peaks.size(); i--;){
 			peak2[i] = sig2peaks[i].second;
 		}
 
@@ -383,26 +385,26 @@ void MultiLevel_WaveletDTW(std::vector<double>& in1, std::vector<double>& in2,
 if(test==2)  //-> peak_ave
 {
 		//-------- use peak average reso --------------//(just for comparison)
-		for(int i = 1; i < sig1peaks.size()-1; i++)
+		for(long i = 1; i < sig1peaks.size()-1; i++)
 		{
-			int start=(sig1peaks[i-1].first+sig1peaks[i].first)/2;
-			int end=(sig1peaks[i].first+sig1peaks[i+1].first)/2;
+			long start=(sig1peaks[i-1].first+sig1peaks[i].first)/2;
+			long end=(sig1peaks[i].first+sig1peaks[i+1].first)/2;
 			double val=0;
-			int cc;
-			for(int j=start;j<=end;j++)
+			long cc;
+			for(long j=start;j<=end;j++)
 			{
 				val+=in1[j];
 				cc++;
 			}
 			peak1[i]=val;
 		}
-		for(int i = 1; i < sig2peaks.size()-1; i++)
+		for(long i = 1; i < sig2peaks.size()-1; i++)
 		{
-			int start=(sig2peaks[i-1].first+sig2peaks[i].first)/2;
-			int end=(sig2peaks[i].first+sig2peaks[i+1].first)/2;
+			long start=(sig2peaks[i-1].first+sig2peaks[i].first)/2;
+			long end=(sig2peaks[i].first+sig2peaks[i+1].first)/2;
 			double val=0;
-			int cc;
-			for(int j=start;j<=end;j++)
+			long cc;
+			for(long j=start;j<=end;j++)
 			{
 				val+=in2[j];
 				cc++;
@@ -418,12 +420,12 @@ if(test==1)  //-> equal_ave
 {
 	//------ using Equally Averaging ------//(just for comparison)
 	//--> proc peak1
-	int cur1=0;
-	int num1=(int)(1.0*in1.size()/sig1peaks.size() );
-	for(int i = 0; i < sig1peaks.size()-1; i++)
+	long cur1=0;
+	long num1=(long)(1.0*in1.size()/sig1peaks.size() );
+	for(long i = 0; i < sig1peaks.size()-1; i++)
 	{
 		double val=0;
-		for(int j=0;j<num1;j++)
+		for(long j=0;j<num1;j++)
 		{
 			val+=in1[cur1];
 			cur1++;
@@ -435,10 +437,10 @@ if(test==1)  //-> equal_ave
 		peak1[i]=val;
 	}
 	{
-		int i=sig1peaks.size()-1;
-		int cc=0;
+		long i=sig1peaks.size()-1;
+		long cc=0;
 		double val=0;
-		for(int j=cur1;j<in1.size();j++)
+		for(long j=cur1;j<in1.size();j++)
 		{
 			val+=in1[j];
 			cc++;
@@ -450,12 +452,12 @@ if(test==1)  //-> equal_ave
 		peak1[i]=val;
 	}
 	//--> proc peak2
-	int cur2=0;
-	int num2=(int)(1.0*in2.size()/sig2peaks.size() );
-	for(int i = 0; i < sig2peaks.size()-1; i++)
+	long cur2=0;
+	long num2=(long)(1.0*in2.size()/sig2peaks.size() );
+	for(long i = 0; i < sig2peaks.size()-1; i++)
 	{
 		double val=0;
-		for(int j=0;j<num2;j++)
+		for(long j=0;j<num2;j++)
 		{
 			val+=in2[cur2];
 			cur2++;
@@ -467,10 +469,10 @@ if(test==1)  //-> equal_ave
 		peak2[i]=val;
 	}
 	{
-		int i=sig2peaks.size()-1;
-		int cc=0;
+		long i=sig2peaks.size()-1;
+		long cc=0;
 		double val=0;
-		for(int j=cur2;j<in2.size();j++)
+		for(long j=cur2;j<in2.size();j++)
 		{
 			val+=in2[j];
 			cc++;
@@ -484,37 +486,35 @@ if(test==1)  //-> equal_ave
 }
 //================================ equal average =====================//over
 
-
-
 		//----- apply DTW or cDTW dependent on k-th level -------//
 		if(k == 0){
 			tdiff = g::proc::DynamicTimeWarping(peak1, peak2, alignment);
 		}
 		else{
 			//----- ReMapIndex_partI (map ground level upon k-th level) -----//
-			int c = 0;
-			for(int i = 0; i < alignment.size(); i++){
+			long c = 0;
+			for(long i = 0; i < alignment.size(); i++){
 				while(sig1peaks[c].first < alignment[i].first){
 					c++;
 				}
 				alignment[i].first = c;	
 			}
 			
-			int d = 0;
-			for(int i = 0; i < alignment.size(); i++){
+			long d = 0;
+			for(long i = 0; i < alignment.size(); i++){
 				while(sig2peaks[d].first < alignment[i].second){
 					d++;
 				}
 				alignment[i].second = d;	
 			}
 			//----- cDWT (constrained DWT) -------//
-			std::vector<std::pair<int,int> > bound;
-			int neib=radius*pow(2,tot_size-k); //adaptive radius
+			std::vector<std::pair<long,long> > bound;
+			long neib=radius*pow(2,tot_size-k); //adaptive radius
 			BoundGeneration(alignment, neib, bound, mode);
 			tdiff = g::proc::BoundDynamicTimeWarping(peak1, peak2, bound, alignment);
 		}
 		//----- ReMapIndex_partII (map k-th level back to ground level) -----//
-		for(int i = alignment.size(); i--;){
+		for(long i = alignment.size(); i--;){
 			alignment[i].first = sig1peaks[alignment[i].first].first;
 			alignment[i].second = sig2peaks[alignment[i].second].first;
 		}
@@ -530,11 +530,11 @@ if(test==1)  //-> equal_ave
 void WriteSequenceAlignment(const char* output, 
 	const std::vector<double>& reference_orig, const std::vector<double>& peer_orig,
 	const std::vector<double>& reference, const std::vector<double>& peer,
-	vector<pair<int,int> >& alignment, int swap)
+	vector<pair<long,long> >& alignment, int swap)
 {
 	vector <std::string> tmp_rec;
 	double diff;	
-	for(int i = 0; i < alignment.size(); i++)
+	for(long i = 0; i < alignment.size(); i++)
 	{
 		//----- output to string ----//
 		std::ostringstream o;
@@ -558,7 +558,7 @@ void WriteSequenceAlignment(const char* output,
 	}
 	//----- output to file ------//
 	FILE *fp=fopen(output,"wb");
-	for(int i=0;i<(int)tmp_rec.size();i++)fprintf(fp,"%s\n",tmp_rec[i].c_str());
+	for(long i=0;i<(long)tmp_rec.size();i++)fprintf(fp,"%s\n",tmp_rec[i].c_str());
 	fclose(fp);
 }
 
@@ -642,14 +642,14 @@ int main(int argc, char **argv)
 	if(opts.test==3)
 	{
 		//------ 5.1 generate initial alignment via FastDTW ------//
-		vector<pair<int,int> > cosali;
+		vector<pair<long,long> > cosali;
 		double tdiff;
-		int max_level=100000; //here we fix maximal level 
+		long max_level=100000; //here we fix maximal level 
 		FastDTW(reference, peer, cosali, opts.radius, max_level,opts.mode, &tdiff);
-		vector<pair<int,int> > bound;
+		vector<pair<long,long> > bound;
 		BoundGeneration(cosali, opts.radius, bound, opts.mode);
 		//------ 5.2 generate final alignment via cDTW ------//
-		std::vector<std::pair<int,int> > alignment;
+		std::vector<std::pair<long,long> > alignment;
 		tdiff = g::proc::BoundDynamicTimeWarping(reference, peer, bound, alignment);
 		fprintf(stderr,"%s %s %lf %d %lf\n",signal_name.c_str(),genom_name.c_str(),tdiff,alignment.size(),tdiff/alignment.size());
 
@@ -671,7 +671,7 @@ int main(int argc, char **argv)
 		EX_TRACE("CWT Analysis...\n");
 	}
 	
-	int npyr = opts.level;          // default: 3
+	long npyr = opts.level;          // default: 3
 	double scale0 = opts.scale0;	// default: sqrt(2)
 	double dscale = 1;              // default: 1
 
@@ -680,7 +680,7 @@ int main(int argc, char **argv)
 
 	//------ 4.1 Zscore normaliza on both CWT signals -----//	
 	//if multiscale is used, pyr logical should be added.
-	for(int i = 0; i < npyr; i++){
+	for(long i = 0; i < npyr; i++){
 		g::proc::ZScoreNormalize(rcwt[i]);
 		g::proc::ZScoreNormalize(pcwt[i]);
 	}
@@ -688,7 +688,7 @@ int main(int argc, char **argv)
 
 	//============================================//
 	//------ 5. multi-level WaveletDTW ----------//
-	std::vector<std::pair<int,int> > cosali;
+	std::vector<std::pair<long,long> > cosali;
 	double tdiff;
 
 	if(opts.verbose ==1){
@@ -700,11 +700,11 @@ int main(int argc, char **argv)
 	}
 
 	//------ 5.1 generate final boundary -------//
-	std::vector<std::pair<int,int> > bound;
+	std::vector<std::pair<long,long> > bound;
 	BoundGeneration(cosali, opts.radius, bound, opts.mode);
 
 	//------ 5.2 generate final alignment via cDTW ------//
-	std::vector<std::pair<int,int> > alignment;
+	std::vector<std::pair<long,long> > alignment;
 	tdiff = g::proc::BoundDynamicTimeWarping(reference, peer, bound, alignment);
 	fprintf(stderr,"%s %s %lf %d %lf\n",signal_name.c_str(),genom_name.c_str(),tdiff,alignment.size(),tdiff/alignment.size());
 

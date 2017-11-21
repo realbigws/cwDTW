@@ -19,18 +19,25 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 	{
 		g::Mer2Signal::Genome2Index_5mer(genomes, index);
 		bound = genomes.size()-5;//genomes.size()%5;
+		signals.assign(bound*scale,0);
+		int cur=0;
 		for(size_t i = 0; i < bound; i++){
-			double sigval = g::Mer2Signal::AvgSignalAt_5mer(index[i]);
-			if(ZSCO_or_NOT==1) //-> transfer to Zsco
-			{
-				sigval = (sigval-90.208351)/12.832660;
-			}
-			else               //-> use original int value
-			{
-				sigval = (int)(5.7*sigval+14);
+			double sigval;
+			if(index[i]<0)sigval=0;
+			else{
+				sigval = g::Mer2Signal::AvgSignalAt_5mer(index[i]);
+				if(ZSCO_or_NOT==1) //-> transfer to Zsco
+				{
+					sigval = (sigval-90.208351)/12.832660;
+				}
+				else               //-> use original int value
+				{
+					sigval = (int)(5.7*sigval+14);
+				}
 			}
 			for(int c = scale; c--;){
-				signals.push_back(sigval);
+				signals[cur]=sigval;
+				cur++;
 			}
 		}
 	}
@@ -38,18 +45,25 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 	{
 		g::Mer2Signal::Genome2Index_6mer(genomes, index);
 		bound = genomes.size()-6;//genomes.size()%5;
+		signals.assign(bound*scale,0);
+		int cur=0;
 		for(size_t i = 0; i < bound; i++){
-			double sigval = g::Mer2Signal::AvgSignalAt_6mer(index[i]);
-			if(ZSCO_or_NOT==1) //-> transfer to Zsco
-			{
-				sigval = (sigval-90.208199)/12.868652;
-			}
-			else               //-> use original int value
-			{
-				sigval = (int)(5.7*sigval+14);
+			double sigval;
+			if(index[i]<0)sigval=0;
+			else{
+			 	sigval = g::Mer2Signal::AvgSignalAt_6mer(index[i]);
+				if(ZSCO_or_NOT==1) //-> transfer to Zsco
+				{
+					sigval = (sigval-90.208199)/12.868652;
+				}
+				else               //-> use original int value
+				{
+					sigval = (int)(5.7*sigval+14);
+				}
 			}
 			for(int c = scale; c--;){
-				signals.push_back(sigval);
+				signals[cur]=sigval;
+				cur++;
 			}
 		}
 	}
@@ -89,8 +103,14 @@ int main(int argc, char **argv)
 	std::vector<int> index;
 	std::vector<double> signals;
 	g::io::ReadATCG(opts.input, genomes);
+
+//printf("read done \n");
+
 	Genomes2SignalSequence(genomes, index, signals, 
 		opts.scale, opts.kmer,opts.zsco);
+
+//printf("proc done \n");
+
 	if(opts.zsco==1){
 		g::io::WriteSignalSequence(opts.output, signals);
 	}
@@ -98,6 +118,8 @@ int main(int argc, char **argv)
 		std::vector<int> signals_ (signals.begin(), signals.end());
 		g::io::WriteSignalSequence_int(opts.output, signals_);
 	}
+
+//printf("write done \n");
 
 	return 0;
 }

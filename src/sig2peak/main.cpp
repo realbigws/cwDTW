@@ -49,12 +49,12 @@ void getRootName(string &in,string &out,char slash)
 
 //--------------- continuous wavelet transform (CWT) analysis -----------------//
 /** @scale0: level0 pyramind scale;  @dscale: scale_i = scale0*(2^{i*dsacle} ); @npyr: total number of pyramind*/
-void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, int npyr)
+void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, long npyr)
 {
 	const double* sigs = &raw[0];		//sst_nino3.dat
 	cwt_object wt;
 
-	size_t N = raw.size();
+	long N = raw.size();
 	double dt = 1;//2;		//sample rate	>  maybe we should use 2?
 // 	npyr =  1; 			// Total Number of scales
 	wt = cwt_init("dog", 2.0, N, dt, npyr);	//"morlet", "dog", "paul"
@@ -62,12 +62,11 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 	cwt(wt, sigs);
 
 	output.resize(npyr);
-	for(size_t k = npyr; k--;){
-		int idx = npyr-k-1;
-		
+	for(long k = npyr; k--;){
+		long idx = npyr-k-1;
 		output[idx].resize(raw.size());
-		size_t offset = k*raw.size();
-		for(size_t i = 0; i < output[idx].size(); i++){
+		long offset = k*raw.size();
+		for(long i = 0; i < output[idx].size(); i++){
 			output[idx][i] = wt->output[i+offset].re;
 		}
 	}
@@ -110,6 +109,9 @@ int main(int argc, char **argv)
 	std::string genom_name;
 	getBaseName(genom_name_orig,genom_name,'/','.');
 
+
+//printf("read done \n");
+
 	//==================================================//
 	//----- 2. process initial input signals ----------//
 	if(opts.ZorNOT==1){
@@ -119,26 +121,32 @@ int main(int argc, char **argv)
 	//====================================================//
 	//----- 3. continous wavelet transform --------------//
 	std::vector<std::vector<double> > rcwt;
-	int npyr = 1;                   // default: 1
+	long npyr = 1;                   // default: 1
 	double scale0 = opts.scale0;	// default: sqrt(2)
 	double dscale = 1;              // default: 1
 	CWTAnalysis(reference, rcwt, scale0, dscale, npyr);	
+
+//printf("proc CWT done \n");
 
 	//----- 4. Zscore normaliza on both CWT signals -----//	
 	//if multiscale is used, pyr logical should be added.
 	if(opts.ZorNOT==1){
 		g::proc::ZScoreNormalize(rcwt[0]);
 	}
-	std::vector<std::pair<int, double> > sigpeaks;
+	std::vector<std::pair<long, double> > sigpeaks;
 	g::proc::PeakPick(rcwt[0], sigpeaks);
+
+//printf("proc PeakPick done \n");
 
 	//=================================================//
 	//----- 5. output final alignment to file -------//
 	FILE *fp=fopen(output.c_str(),"wb");
-	for(int i=0;i<sigpeaks.size();i++){
+	for(long i=0;i<sigpeaks.size();i++){
 		fprintf(fp,"%lf\n",sigpeaks[i].second);
 	}
 	fclose(fp);
+
+//printf("write done \n");
 
 	//----- exit -----//	
 	return 0;

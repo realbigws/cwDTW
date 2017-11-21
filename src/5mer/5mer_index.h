@@ -21,7 +21,7 @@ private:
 	
 public:
 	//----- Nucleotide_to_Int ---//
-	static int Nucleotide_to_Int(char c);
+	static int Nucleotide_to_Int(char c,int &mark);
 
 	//----- generate index -------//
 	static void Genome2Index_5mer(const std::vector <char> &input, std::vector <int> &index);

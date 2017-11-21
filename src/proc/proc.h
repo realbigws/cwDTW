@@ -15,29 +15,29 @@ namespace proc{
 
 //================== Sheng added for Transfer alignment between Renmin_style and Sheng_style ==================//
 
-int Ali_To_Cor(vector <int> &ali2, vector <vector <int> > &AFP_Cor);
+long Ali_To_Cor(vector <long> &ali2, vector <vector <long> > &AFP_Cor);
 	
-void Ali1_To_AliPair(int n1,int n2,vector <int> &ali1,
-	vector<pair<int,int> > & alignment_out);
+void Ali1_To_AliPair(long n1,long n2,vector <long> &ali1,
+	vector<pair<long,long> > & alignment_out);
 
-void Ali2_To_AliPair(int n1,int n2,vector <int> &ali2,
-	vector<pair<int,int> > & alignment_out);
+void Ali2_To_AliPair(long n1,long n2,vector <long> &ali2,
+	vector<pair<long,long> > & alignment_out);
 
-void AliPair_To_Ali1_Ali2(int n1,int n2,
-	vector<pair<int,int> > & alignment_in,
-	vector <int> &ali1,vector <int> &ali2);
+void AliPair_To_Ali1_Ali2(long n1,long n2,
+	vector<pair<long,long> > & alignment_in,
+	vector <long> &ali1,vector <long> &ali2);
 
-void From_Align_Get_Bound(int moln1,int moln2,vector<pair<int,int> > &align,
-	vector<pair<int,int> > &bound,int neib);
+void From_Align_Get_Bound(long moln1,long moln2,vector<pair<long,long> > &align,
+	vector<pair<long,long> > &bound,long neib);
 
-void Renmin_To_Sheng_align(int moln1,int moln2,
-	vector<pair<int,int> > &align_in, vector<pair<int,int> > &align_out);
+void Renmin_To_Sheng_align(long moln1,long moln2,
+	vector<pair<long,long> > &align_in, vector<pair<long,long> > &align_out);
 
-void Sheng_To_Renmin_align(int moln1,int moln2,
-	vector<pair<int,int> > &align_in, vector<pair<int,int> > &align_out);
+void Sheng_To_Renmin_align(long moln1,long moln2,
+	vector<pair<long,long> > &align_in, vector<pair<long,long> > &align_out);
 
-void Sheng_To_Renmin_bound(int moln1,int moln2,
-	vector<pair<int,int> > &bound_in, vector<pair<int,int> > &bound_out);
+void Sheng_To_Renmin_bound(long moln1,long moln2,
+	vector<pair<long,long> > &bound_in, vector<pair<long,long> > &bound_out);
 
 //================================= sheng modify ======================//over
 
@@ -47,17 +47,17 @@ void ZScoreNormalize(std::vector<double>& signals, double* avg = NULL, double* s
 //-- Peak pick --//
 void LaplaceDiff(const std::vector<double>& raw, std::vector<double>& ldiff);
 void Diff(const std::vector<double>& raw, std::vector<double>& diff);
-void PeakPick(const std::vector<double>& raw, std::vector<std::pair<int, double> >& peaks);
+void PeakPick(const std::vector<double>& raw, std::vector<std::pair<long, double> >& peaks);
 
 //-- Dynamic Time Warping --//
-double DynamicTimeWarping_global(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<int,int> >& alignment);
-double DynamicTimeWarping_local(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<int,int> >& alignment);
-double DynamicTimeWarping(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<int,int> >& alignment);
+double DynamicTimeWarping_global(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<long,long> >& alignment);
+double DynamicTimeWarping_local(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<long,long> >& alignment);
+double DynamicTimeWarping(const std::vector<double>& seq1, const std::vector<double>& seq2, std::vector<std::pair<long,long> >& alignment);
 
 //-- constrained (bound) DTW --//
-double BoundDynamicTimeWarping(const std::vector<double>& seq1, const std::vector<double>& seq2, const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment);
+double BoundDynamicTimeWarping(const std::vector<double>& seq1, const std::vector<double>& seq2, const std::vector<std::pair<long,long> >& bound, std::vector<std::pair<long,long> >& alignment);
 /** Left path is blocked*/
-double BoundDynamicTimeWarpingR(const std::vector<double>& seq1, const std::vector<double>& seq2, const std::vector<std::pair<int,int> >& bound, std::vector<std::pair<int,int> >& alignment);
+double BoundDynamicTimeWarpingR(const std::vector<double>& seq1, const std::vector<double>& seq2, const std::vector<std::pair<long,long> >& bound, std::vector<std::pair<long,long> >& alignment);
 
 }
 
