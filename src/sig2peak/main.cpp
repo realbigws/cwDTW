@@ -79,6 +79,7 @@ int main(int argc, char **argv)
 	struct options opts;
 	opts.scale0 = sqrt(2);
 	opts.ZorNOT = 0;    //0 for NOT perform Z-normalize
+	opts.posout = 0;    //0 for NOT output the position of each peak
 
 	//----- parse arguments -----//
 	if(GetOpts(argc, argv, &opts) < 0){
@@ -142,7 +143,12 @@ int main(int argc, char **argv)
 	//----- 5. output final alignment to file -------//
 	FILE *fp=fopen(output.c_str(),"wb");
 	for(long i=0;i<sigpeaks.size();i++){
-		fprintf(fp,"%lf\n",sigpeaks[i].second);
+		if(opts.posout==0){
+			fprintf(fp,"%lf\n",sigpeaks[i].second);
+		}
+		else{
+			fprintf(fp,"%lf %d\n",sigpeaks[i].second,sigpeaks[i].first);
+		}
 	}
 	fclose(fp);
 
