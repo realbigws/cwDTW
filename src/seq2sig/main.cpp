@@ -34,14 +34,14 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 	}
 */
 
-	size_t bound;
+	long bound;
 	if(FIVE_or_SIX==0) //-> 5mer model
 	{
 		g::Mer2Signal::Genome2Index_5mer(genomes, index);
 		bound = genomes.size()-5;//genomes.size()%5;
 		signals.assign(bound*scale,0);
-		int cur=0;
-		for(size_t i = 0; i < bound; i++){
+		long cur=0;
+		for(long i = 0; i < bound; i++){
 			double sigval;
 			if(index[i]<0)sigval=0;
 			else{
@@ -66,8 +66,8 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 		g::Mer2Signal::Genome2Index_6mer(genomes, index);
 		bound = genomes.size()-6;//genomes.size()%5;
 		signals.assign(bound*scale,0);
-		int cur=0;
-		for(size_t i = 0; i < bound; i++){
+		long cur=0;
+		for(long i = 0; i < bound; i++){
 			double sigval;
 			if(index[i]<0)sigval=0;
 			else{
@@ -88,12 +88,21 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 		}
 	}
 
-	//---- tail five_mer ------//
-//	for(size_t i = bound; i < genomes.size(); i++){
-//		for(int c = scale; c--;){
-//			signals.push_back(100);
-//		}
-//	}
+/*
+	//---- tail k_mer ------//
+	for(long i = bound; i < genomes.size(); i++){
+		for(int c = scale; c--;){
+			if(ZSCO_or_NOT==1) //-> transfer to Zsco
+			{
+				signals.push_back(0);
+			}
+			else
+			{
+				signals.push_back(100);
+			}
+		}
+	}
+*/
 }
 
 //---------------------- main ---------------------//
