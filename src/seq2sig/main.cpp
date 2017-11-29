@@ -14,6 +14,26 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 	std::vector<int>& index, std::vector<double>& signals, 
 	int scale, int FIVE_or_SIX, int ZSCO_or_NOT)
 {
+/*
+	//------- simple version -----------//
+	{
+		long bound=genomes.size();
+		index.assign(bound,0);
+		signals.assign(bound,0);
+		for(long i=0;i<bound;i++)
+		{
+			char c=genomes[i];
+			double val=0;
+			if(c=='A')val=1;
+			if(c=='T')val=2;
+			if(c=='C')val=-1;
+			if(c=='G')val=-2;
+			signals[i]=val;
+		}
+		return true;
+	}
+*/
+
 	size_t bound;
 	if(FIVE_or_SIX==0) //-> 5mer model
 	{
