@@ -55,6 +55,29 @@ SCALE:    base scale in continous wavelet (default sqrt(2));
 
 
 #===============
+# Screen output:
+#===============
+
+                  1                                    2                       3         4     5
+-------------------------------------------------------------------------------------------------------
+002a08b9-0248-4929-9759-2d5c0942076d 002a08b9-0248-4929-9759-2d5c0942076d 22089.546144 127006 0.173925
+
+---------
+[Legend]:
+---------
+
+the 1st column shows the name of the first input signal,
+the 2nd column shows the name of the second input signal,
+
+the 3rd column shows the overall distance after Dynamic Time Warping (DTW),
+the 4th colmnn shows the length of the warping path (or, length of alignment),
+
+the 5th column shows the normalized distance of a warping path.
+
+
+
+
+#===============
 # Output format:
 #===============
 
