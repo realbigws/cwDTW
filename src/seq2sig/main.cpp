@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <proc/io.h>
 #include "util/exception.h"
-#include "5mer/5mer_index.h"
+#include "kmer/kmer_index.h"
 
 bool Genomes2SignalSequence(const std::vector<char>& genomes, 
 	std::vector<int>& index, std::vector<double>& signals, 

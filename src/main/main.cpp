@@ -7,7 +7,6 @@
 #include <sys/types.h>
 #include "proc/proc.h"
 #include "util/exception.h"
-#include "5mer/5mer_index.h"
 #include "wavelib.h"
 #include <malloc.h>
 #include <cmath>
