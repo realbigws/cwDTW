@@ -5,17 +5,16 @@
 Title:
   cwDTW: Continuous Wavelet Dynamic Time Warping for unbalanced global mapping of two signals
 
-
 Author:
   Renmin Han,
   Yu Li,
-  Sheng Wang,
-  Xin Gao
-
+  Xin Gao,
+  Sheng Wang
 
 Contact email:
-  realbigws@gmail.com
   xin.gao@kaust.edu.sa
+  realbigws@gmail.com
+
 
 
 #=========

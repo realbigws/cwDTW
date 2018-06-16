@@ -2,6 +2,7 @@
 #include "kmer_index.h"
 #include "5mer_index_official.rc"
 #include "6mer_index_official.rc"
+#include "rna_inddx_official.rc"
 
 
 //---------- Nucleotide_to_Int ----------//
@@ -22,6 +23,9 @@ int g::Mer2Signal::Nucleotide_to_Int(char c)
 			break;
 		case 'T':
 			tag = 3;
+			break;
+		case 'U':
+			tag = 3;   //-> for RNA only
 			break;
 		default:
 			fprintf(stderr,"BAD CODE HERE !! %c \n",c);
@@ -102,5 +106,18 @@ double g::Mer2Signal::AvgSignalAt_5mer(int index)
 double g::Mer2Signal::AvgSignalAt_6mer(int index)
 {
 	return index_table_6mer[index];
+}
+
+//---------- RNA case ------------//
+//-> 200mv RNA
+double g::Mer2Signal::RnaSignalAt_5mer_200mv(int index)
+{
+	return rna_table_5mer[index][0];
+}
+
+//-> 180mv RNA
+double g::Mer2Signal::RnaSignalAt_5mer_180mv(int index)
+{
+	return rna_table_5mer[index][1];
 }
 
