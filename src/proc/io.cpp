@@ -114,4 +114,40 @@ bool g::io::WriteSignalSequence_int(const char* name, const std::vector<int>& si
     return true;
 }
 
+//--------- write signal with name ---------//
+bool g::io::WriteSignalSequence_withName(const char* name, 
+	const std::vector<double>& signals,
+	const std::vector<std::string>& kmer_rec)
+{
+    std::ostringstream o;
+    for(size_t i = 0; i < signals.size(); i++){
+        o<<signals[i]<<" "<<kmer_rec[i]<<std::endl;
+    }
+    std::string s=o.str();
+
+    ///--- output ----//
+    FILE *fp=fopen(name,"wb");
+    fprintf(fp,"%s",s.c_str());
+    fclose(fp);
+
+    return true;
+}
+
+bool g::io::WriteSignalSequence_int_withName(const char* name, 
+	const std::vector<int>& signals,
+	const std::vector<std::string>& kmer_rec)
+{
+    std::ostringstream o;
+    for(size_t i = 0; i < signals.size(); i++){
+        o<<signals[i]<<" "<<kmer_rec[i]<<std::endl;
+    }
+    std::string s=o.str();
+
+    //--- output ----//
+    FILE *fp=fopen(name,"wb");
+    fprintf(fp,"%s",s.c_str());
+    fclose(fp);
+
+    return true;
+}
 

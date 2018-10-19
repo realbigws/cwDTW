@@ -12,8 +12,9 @@
 
 //---------- genome to signal (DNA) -------------//
 bool Genomes2SignalSequence(const std::vector<char>& genomes, 
-	std::vector<int>& index, std::vector<double>& signals, 
-	int scale, int FIVE_or_SIX, int ZSCO_or_NOT)
+	std::vector<int>& index, std::vector<double>& signals,
+	std::vector<std::string>& kmer_rec, int scale, 
+	int FIVE_or_SIX, int ZSCO_or_NOT, int WANT_TAIL)
 {
 /*
 	//------- simple version -----------//
@@ -39,10 +40,14 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 	if(FIVE_or_SIX==0) //-> 5mer model
 	{
 		g::Mer2Signal::Genome2Index_5mer(genomes, index);
-		bound = genomes.size()-5;//genomes.size()%5;
+		bound = genomes.size()-4;//genomes.size()%5;
 		signals.assign(bound*scale,0);
+		kmer_rec.resize(bound*scale);
 		long cur=0;
 		for(long i = 0; i < bound; i++){
+			//-> get kmer
+			std::string kmer(genomes.begin()+i,genomes.begin()+i+5);
+			//-> get signal
 			double sigval;
 			if(index[i]<0)sigval=0;
 			else{
@@ -56,8 +61,10 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 					sigval = (int)(5.7*sigval+14);
 				}
 			}
+			//-> assign
 			for(int c = scale; c--;){
 				signals[cur]=sigval;
+				kmer_rec[cur]=kmer;
 				cur++;
 			}
 		}
@@ -65,10 +72,14 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 	else               //-> 6mer model
 	{
 		g::Mer2Signal::Genome2Index_6mer(genomes, index);
-		bound = genomes.size()-6;//genomes.size()%5;
+		bound = genomes.size()-5;//genomes.size()%5;
 		signals.assign(bound*scale,0);
+		kmer_rec.resize(bound*scale);
 		long cur=0;
 		for(long i = 0; i < bound; i++){
+			//-> get kmer
+			std::string kmer(genomes.begin()+i,genomes.begin()+i+6);
+			//-> get signal
 			double sigval;
 			if(index[i]<0)sigval=0;
 			else{
@@ -82,34 +93,40 @@ bool Genomes2SignalSequence(const std::vector<char>& genomes,
 					sigval = (int)(5.7*sigval+14);
 				}
 			}
+			//-> assign
 			for(int c = scale; c--;){
 				signals[cur]=sigval;
+				kmer_rec[cur]=kmer;
 				cur++;
 			}
 		}
 	}
 
-/*
+
 	//---- tail k_mer ------//
-	for(long i = bound; i < genomes.size(); i++){
-		for(int c = scale; c--;){
-			if(ZSCO_or_NOT==1) //-> transfer to Zsco
-			{
-				signals.push_back(0);
-			}
-			else
-			{
-				signals.push_back(100);
+	if(WANT_TAIL==1)
+	{
+		for(long i = bound; i < genomes.size(); i++){
+			for(int c = scale; c--;){
+				if(ZSCO_or_NOT==1) //-> transfer to Zsco
+				{
+					signals.push_back(0);
+				}
+				else
+				{
+					signals.push_back(5.7*100+14);
+				}
 			}
 		}
 	}
-*/
+
 }
 
 //---------- genome to signal (RNA) -------------//
 bool Genomes2SignalSequence_RNA(const std::vector<char>& genomes, 
 	std::vector<int>& index, std::vector<double>& signals, 
-	int scale, int mv200_or_mv180, int ZSCO_or_NOT)
+	std::vector<std::string>& kmer_rec, int scale, 
+	int mv200_or_mv180, int ZSCO_or_NOT, int WANT_TAIL)
 {
 /*
 	//------- simple version -----------//
@@ -136,10 +153,14 @@ bool Genomes2SignalSequence_RNA(const std::vector<char>& genomes,
 	if(mv200_or_mv180==1) //-> 200mv model
 	{
 		g::Mer2Signal::Genome2Index_5mer(genomes, index);
-		bound = genomes.size()-5;//genomes.size()%5;
+		bound = genomes.size()-4;//genomes.size()%5;
 		signals.assign(bound*scale,0);
+		kmer_rec.resize(bound*scale);
 		long cur=0;
 		for(long i = 0; i < bound; i++){
+			//-> get kmer
+			std::string kmer(genomes.begin()+i,genomes.begin()+i+5);
+			//-> get signal
 			double sigval;
 			if(index[i]<0)sigval=0;
 			else{
@@ -153,8 +174,10 @@ bool Genomes2SignalSequence_RNA(const std::vector<char>& genomes,
 					sigval = (int)(5.7*sigval+14);
 				}
 			}
+			//-> assign
 			for(int c = scale; c--;){
 				signals[cur]=sigval;
+				kmer_rec[cur]=kmer;
 				cur++;
 			}
 		}
@@ -162,10 +185,13 @@ bool Genomes2SignalSequence_RNA(const std::vector<char>& genomes,
 	else                  //-> 180mv model
 	{
 		g::Mer2Signal::Genome2Index_5mer(genomes, index);
-		bound = genomes.size()-5;//genomes.size()%5;
+		bound = genomes.size()-4;//genomes.size()%5;
 		signals.assign(bound*scale,0);
 		long cur=0;
 		for(long i = 0; i < bound; i++){
+			//-> get kmer
+			std::string kmer(genomes.begin()+i,genomes.begin()+i+5);
+			//-> get signal
 			double sigval;
 			if(index[i]<0)sigval=0;
 			else{
@@ -179,28 +205,33 @@ bool Genomes2SignalSequence_RNA(const std::vector<char>& genomes,
 					sigval = (int)(5.7*sigval+14);
 				}
 			}
+			//-> assign
 			for(int c = scale; c--;){
 				signals[cur]=sigval;
+				kmer_rec[cur]=kmer;
 				cur++;
 			}
 		}
 	}
 
-/*
+
 	//---- tail k_mer ------//
-	for(long i = bound; i < genomes.size(); i++){
-		for(int c = scale; c--;){
-			if(ZSCO_or_NOT==1) //-> transfer to Zsco
-			{
-				signals.push_back(0);
-			}
-			else
-			{
-				signals.push_back(100);
+	if(WANT_TAIL==1)
+	{
+		for(long i = bound; i < genomes.size(); i++){
+			for(int c = scale; c--;){
+				if(ZSCO_or_NOT==1) //-> transfer to Zsco
+				{
+					signals.push_back(0);
+				}
+				else
+				{
+					signals.push_back(5.7*100+14);
+				}
 			}
 		}
 	}
-*/
+
 }
 
 
@@ -215,6 +246,7 @@ int main(int argc, char **argv)
 	opts.kmer=0;
 	opts.zsco=0;
 	opts.rna=0;
+	opts.name=0;
 	if(GetOpts(argc, argv, &opts) < 0){
 		EX_TRACE("**WRONG INPUT!**\n");
 		return -1;
@@ -235,25 +267,42 @@ int main(int argc, char **argv)
 
 //printf("read done \n");
 
+	std::vector<std::string> kmer_rec;
 	if(opts.rna==0)   //-> DNA pore model
 	{
-		Genomes2SignalSequence(genomes, index, signals, 
-			opts.scale, opts.kmer,opts.zsco);
+		Genomes2SignalSequence(genomes, index, signals, kmer_rec,
+			opts.scale, opts.kmer,opts.zsco,0);
 	}
 	else              //-> RNA pore model
 	{
-		Genomes2SignalSequence_RNA(genomes, index, signals, 
-			opts.scale, opts.rna,opts.zsco);
+		Genomes2SignalSequence_RNA(genomes, index, signals, kmer_rec,
+			opts.scale, opts.rna,opts.zsco,0);
 	}
 
 //printf("proc done \n");
 
-	if(opts.zsco==1){
-		g::io::WriteSignalSequence(opts.output, signals);
+	if(opts.zsco==1)
+	{
+		if(opts.name==1)
+		{
+			g::io::WriteSignalSequence_withName(opts.output, signals, kmer_rec);
+		}
+		else
+		{
+			g::io::WriteSignalSequence(opts.output, signals);
+		}
 	}
-	else{
+	else
+	{
 		std::vector<int> signals_ (signals.begin(), signals.end());
-		g::io::WriteSignalSequence_int(opts.output, signals_);
+		if(opts.name==1)
+		{
+			g::io::WriteSignalSequence_int_withName(opts.output, signals_, kmer_rec);
+		}
+		else
+		{
+			g::io::WriteSignalSequence_int(opts.output, signals_);
+		}
 	}
 
 //printf("write done \n");

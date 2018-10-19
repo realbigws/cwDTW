@@ -23,6 +23,14 @@ bool WriteSignalSequence(const char* name, const std::vector<double>& signals);
 
 bool WriteSignalSequence_int(const char* name, const std::vector<int>& signals);
 
+//---- write signal with name ----//
+bool WriteSignalSequence_withName(const char* name,
+        const std::vector<double>& signals,
+        const std::vector<std::string>& kmer_rec);
+bool WriteSignalSequence_int_withName(const char* name, 
+	const std::vector<int>& signals,
+	const std::vector<std::string>& kmer_rec);
+
 }
 
 }
