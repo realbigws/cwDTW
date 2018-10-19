@@ -49,7 +49,8 @@ void getRootName(string &in,string &out,char slash)
 
 //--------------- continuous wavelet transform (CWT) analysis -----------------//
 /** @scale0: level0 pyramind scale;  @dscale: scale_i = scale0*(2^{i*dsacle} ); @npyr: total number of pyramind*/
-void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, long npyr)
+void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, 
+	double scale0, double dscale, long npyr)
 {
 	const double* sigs = &raw[0];		//sst_nino3.dat
 	cwt_object wt;
@@ -360,9 +361,6 @@ void MultiLevel_WaveletDTW(std::vector<double>& in1, std::vector<double>& in2,
 	long tot_size=sig1.size();
 	for(long k = 0; k < tot_size; k++)
 	{
-
-//printf("k=%d\n",k);
-
 		//------ peakpick CWT signal -------------//
 		g::proc::PeakPick(sig1[k], sig1peaks);
 		g::proc::PeakPick(sig2[k], sig2peaks);
