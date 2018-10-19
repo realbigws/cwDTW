@@ -9,10 +9,14 @@
 
 using namespace std;
 
+
 //================== Sheng added for Transfer alignment between Renmin_style and Sheng_style ==================//
 
-//-------- Ali_To_Cor -------------//
-long g::proc::Ali_To_Cor(vector <long> &ali2, vector <vector <long> > &AFP_Cor)
+
+//====================== AfpCor relevant operations ===========================//
+//------- given Ali2 return AfpCor ------//
+long g::proc::Ali2_To_AfpCor(long n1,long n2,vector <long> &ali2,
+	vector <vector <long> > &AFP_Cor,long thres)
 {
 	long i,k;
 	long num;
@@ -35,8 +39,8 @@ long g::proc::Ali_To_Cor(vector <long> &ali2, vector <vector <long> > &AFP_Cor)
 	ii=-1;
 	jj=-1;
 	long moln2=(long)ali2.size();
-	long thres=0;
 	AFP_Cor.clear();
+	long afp_num=0;
 	for(i=0;i<moln2;i++)
 	{
 		if(ali2[i]==-1) //purely blank
@@ -50,7 +54,18 @@ long g::proc::Ali_To_Cor(vector <long> &ali2, vector <vector <long> > &AFP_Cor)
 					tmp_rec.push_back(head2);
 					tmp_rec.push_back(count);
 					AFP_Cor.push_back(tmp_rec);
+					afp_num++;
 					num+=count;
+					//----- check cross_over -----//
+					if(afp_num>1)
+					{
+						if(AFP_Cor[afp_num-2][0]+AFP_Cor[afp_num-2][2]>AFP_Cor[afp_num-1][0] || AFP_Cor[afp_num-2][1]+AFP_Cor[afp_num-2][2]>AFP_Cor[afp_num-1][1])
+						{
+							fprintf(stderr,"cross over found !!!! %d > %d || %d > %d \n",
+								AFP_Cor[afp_num-2][0]+AFP_Cor[afp_num-2][2],AFP_Cor[afp_num-1][0],
+								AFP_Cor[afp_num-2][1]+AFP_Cor[afp_num-2][2],AFP_Cor[afp_num-1][1]);
+						}
+					}
 				}
 				count=0;
 				isFirst=1;
@@ -86,7 +101,18 @@ ws_end:
 			tmp_rec.push_back(head2);
 			tmp_rec.push_back(count);
 			AFP_Cor.push_back(tmp_rec);
+			afp_num++;
 			num+=count;
+			//----- check cross_over -----//
+			if(afp_num>1)
+			{
+				if(AFP_Cor[afp_num-2][0]+AFP_Cor[afp_num-2][2]>AFP_Cor[afp_num-1][0] || AFP_Cor[afp_num-2][1]+AFP_Cor[afp_num-2][2]>AFP_Cor[afp_num-1][1])
+				{
+					fprintf(stderr,"cross over found !!!! %d > %d || %d > %d \n",
+						AFP_Cor[afp_num-2][0]+AFP_Cor[afp_num-2][2],AFP_Cor[afp_num-1][0],
+						AFP_Cor[afp_num-2][1]+AFP_Cor[afp_num-2][2],AFP_Cor[afp_num-1][1]);
+				}
+			}
 		}
 
 		if(isLast==1)goto end;
@@ -100,6 +126,46 @@ end:
 	return num;
 }
 
+//------- given Ali1 return AfpCor ------//
+long g::proc::Ali1_To_AfpCor(long n1,long n2,vector <long> &ali1, 
+	vector <vector <long> > &AFP_Cor,long thres)
+{
+	//from ali2 to ali1
+	vector <long> ali2(n2,-1);
+	for(long i=0;i<n1;i++)
+	{
+		if(ali1[i]==-1)continue;
+		long jj=ali1[i];
+		ali2[jj]=i;
+	}
+	//proc
+	Ali2_To_AfpCor(n1,n2,ali2,AFP_Cor,thres);
+}
+
+//--------- given AfpCor return Ali1 and Ali2
+void g::proc::AfpCor_To_Ali1_Ali2(long n1,long n2,
+	vector <vector <long> > &AFP_Cor,
+	vector <long> &ali1,vector <long> &ali2)
+{
+	//init
+	ali1.assign(n1,-1);
+	ali2.assign(n2,-1);
+	//proc
+	for(long i=0;i<(long)AFP_Cor.size();i++)
+	{
+		long ii=AFP_Cor[i][0];
+		long jj=AFP_Cor[i][1];
+		long len=AFP_Cor[i][2];
+		for(long j=0;j<len;j++)
+		{
+			ali1[ii+j]=jj+j;
+			ali2[jj+j]=ii+j;
+		}
+	}
+}
+
+
+//====================== AliPair relevant operations ===========================//
 //------- given Ali1 return AliPair ------//
 void g::proc::Ali1_To_AliPair(long n1,long n2,vector <long> &ali1,
 	vector<pair<long,long> > & alignment_out)
@@ -172,10 +238,8 @@ void g::proc::AliPair_To_Ali1_Ali2(long n1,long n2,
 	vector <long> &ali1,vector <long> &ali2)
 {
 	//init
-	ali1.resize(n1);
-	ali2.resize(n2);
-	for(long i=0;i<n1;i++)ali1[i]=-1;
-	for(long i=0;i<n2;i++)ali2[i]=-1; 
+	ali1.assign(n1,-1);
+	ali2.assign(n2,-1);
 	//proc
 	for(long i=0;i<(long)alignment_in.size();i++)
 	{
@@ -430,6 +494,8 @@ void g::proc::Sheng_To_Renmin_bound(long moln1,long moln2,
 }
 
 //================================= sheng modify ======================//over
+
+
 
 //--------- Z normalization ------------//
 void g::proc::ZScoreNormalize(std::vector< double >& signals, double* avg, double* stdev)

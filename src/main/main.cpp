@@ -77,7 +77,8 @@ void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double>
 
 //----------------- boundary generation for constrained dynamic time warping (cDTW) -------------//
 void BoundGeneration(std::vector<std::pair<long,long> >& cosali, 
-	int neib, std::vector<std::pair<long,long> >& bound, int mode)
+	long neib, std::vector<std::pair<long,long> >& bound, int mode,
+	int RENMIN_or_SHENG=0)
 {
 
 //if(mode!=-1) //-> mode = -1 means Renmin mode
@@ -141,6 +142,10 @@ if(mode==1) //-> use partial-diagonol alignment
 	bound[bound.size()-1].second = cosali[cosali.size()-1].second;
 
 
+	if(RENMIN_or_SHENG==1) //-> use Sheng's bound definition
+	{
+		bound=bound_sheng;
+	}
 
 	//----> output post-bound alignnment -------
 //	{

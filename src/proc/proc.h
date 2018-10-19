@@ -14,9 +14,18 @@ namespace g{
 namespace proc{
 
 //================== Sheng added for Transfer alignment between Renmin_style and Sheng_style ==================//
+//-> AfpCor relevant
+long Ali1_To_AfpCor(long n1,long n2,vector <long> &ali1, 
+	vector <vector <long> > &AFP_Cor, long thres=0);
 
-long Ali_To_Cor(vector <long> &ali2, vector <vector <long> > &AFP_Cor);
-	
+long Ali2_To_AfpCor(long n1,long n2,vector <long> &ali2, 
+	vector <vector <long> > &AFP_Cor, long thres=0);
+
+void AfpCor_To_Ali1_Ali2(long n1,long n2,
+	vector <vector <long> > &AFP_Cor,
+	vector <long> &ali1,vector <long> &ali2);
+
+//-> AliPair relevant
 void Ali1_To_AliPair(long n1,long n2,vector <long> &ali1,
 	vector<pair<long,long> > & alignment_out);
 
@@ -27,6 +36,7 @@ void AliPair_To_Ali1_Ali2(long n1,long n2,
 	vector<pair<long,long> > & alignment_in,
 	vector <long> &ali1,vector <long> &ali2);
 
+//-> given alignment return boundary
 void From_Align_Get_Bound(long moln1,long moln2,vector<pair<long,long> > &align,
 	vector<pair<long,long> > &bound,long neib);
 
