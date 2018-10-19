@@ -709,9 +709,6 @@ double g::proc::BoundDynamicTimeWarping(
 	}
 	
 	for(long i = 1; i < seq1->size(); i++){
-
-//printf("cur=%d\r",i);
-
 		for(long j = bound[i].first; j <= bound[i].second; j++){
 			double acc = std::min(std::min(SCORE(i-1, j, score, bound), SCORE(i, j-1, score, bound)), SCORE(i-1, j-1, score, bound));
 			if(acc == DBL_MAX){
