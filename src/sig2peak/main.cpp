@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "proc/proc.h"
+#include "proc/cwdtw.h"
 #include "util/exception.h"
 #include "wavelib.h"
 #include <malloc.h>
@@ -46,32 +46,6 @@ void getRootName(string &in,string &out,char slash)
 //---------------------- utility ------//over
 
 
-
-//--------------- continuous wavelet transform (CWT) analysis -----------------//
-/** @scale0: level0 pyramind scale;  @dscale: scale_i = scale0*(2^{i*dsacle} ); @npyr: total number of pyramind*/
-void CWTAnalysis(const std::vector<double>& raw, std::vector<std::vector<double> >& output, double scale0, double dscale, long npyr)
-{
-	const double* sigs = &raw[0];		//sst_nino3.dat
-	cwt_object wt;
-
-	long N = raw.size();
-	double dt = 1;//2;		//sample rate	>  maybe we should use 2?
-// 	npyr =  1; 			// Total Number of scales
-	wt = cwt_init("dog", 2.0, N, dt, npyr);	//"morlet", "dog", "paul"
-	setCWTScales(wt, scale0, dscale, "pow", 2.0);
-	cwt(wt, sigs);
-
-	output.resize(npyr);
-	for(long k = npyr; k--;){
-		long idx = npyr-k-1;
-		output[idx].resize(raw.size());
-		long offset = k*raw.size();
-		for(long i = 0; i < output[idx].size(); i++){
-			output[idx][i] = wt->output[i+offset].re;
-		}
-	}
-	cwt_free(wt);
-}
 
 //----------------- main -------------------//
 int main(int argc, char **argv)
@@ -125,7 +99,7 @@ int main(int argc, char **argv)
 	long npyr = 1;                   // default: 1
 	double scale0 = opts.scale0;	// default: sqrt(2)
 	double dscale = 1;              // default: 1
-	CWTAnalysis(reference, rcwt, scale0, dscale, npyr);	
+	g::cwdtw::CWTAnalysis(reference, rcwt, scale0, dscale, npyr);	
 
 //printf("proc CWT done \n");
 
