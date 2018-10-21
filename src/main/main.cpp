@@ -12,7 +12,7 @@
 #include <iomanip>
 
 using namespace std;
-using namespace g::proc;
+
 
 //-------- utility ------//
 void getBaseName(string &in,string &out,char slash,char dot)
