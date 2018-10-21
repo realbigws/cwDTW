@@ -201,6 +201,7 @@ inline int GetOpts(int argc, char **argv, options* opts_) {
                 return -1;
              }
 	}
+	break;
 
         case 0:
             break;
