@@ -13,7 +13,7 @@ struct options {
     char input[65532];
     char output[65532];
     int scale=1;
-    int kmer=0;
+    int kmer=1;
     int zsco=0;
     int rna=0;
     int name=0;
@@ -34,7 +34,7 @@ inline int GetOpts(int argc, char **argv, options* opts_){
     };
 	
     if((argc != 5 && argc != 7 && argc != 9 && argc != 11 && argc != 13 && argc != 15 ) && argc >= 3 || (argc == 2 && argv[1][0] != '-' && argv[1][1] != 'h') || argc == 1){
-            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k kmer=0])([-z zsco=0])([-R RNA=0])([-N name=0])\n");
+            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k kmer=1])([-z zsco=0])([-R RNA=0])([-N name=0])\n");
             return -1;
     }
     
@@ -56,7 +56,7 @@ inline int GetOpts(int argc, char **argv, options* opts_){
 
         case 'h':
         {
-            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k KMER=0])([-z zsco=0])([-R RNA=0])([-N name=0])\n");
+            EX_TRACE("[-i GENOME INPUT][-o SIGNAL OUTPUT]([-s SCALE=1])([-k KMER=1])([-z zsco=0])([-R RNA=0])([-N name=0])\n");
             EX_TRACE("[note]: to use 5mer pore model, set -k 0; to use 6mer pore model, set -k 1\n");
             EX_TRACE("        if zsco is set to 0, then Z-normalize pore model. \n");
             EX_TRACE("        if RNA is set to 0, use DNA pore mode; 1 for 200mv RNA, -1 for 180mv RNA \n");

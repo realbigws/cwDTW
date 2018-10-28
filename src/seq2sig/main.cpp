@@ -243,7 +243,7 @@ int main(int argc, char **argv)
 
 	struct options opts;
 	opts.scale=1;
-	opts.kmer=0;
+	opts.kmer=1;
 	opts.zsco=0;
 	opts.rna=0;
 	opts.name=0;
